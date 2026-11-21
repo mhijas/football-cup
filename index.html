@@ -40,6 +40,10 @@
   .teamrow{display:flex;gap:8px;margin-bottom:6px}
   .teamrow input{flex:1}
   .champ{font-size:1.4rem;text-align:center;padding:14px;color:var(--warn)}
+.gl{font-size:.8rem;color:var(--mut);padding:0 0 6px 0}
+  .gl span{margin-right:10px}
+  .mhead{display:flex;align-items:center;justify-content:center;gap:18px;font-size:1.5rem;margin:10px 0}
+  .mini{padding:3px 8px;font-size:.75rem}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -51,6 +55,7 @@
   <nav>
     <button class="sec" data-tab="groups">Groups & Fixtures</button>
     <button class="sec" data-tab="knockout">Knockout</button>
+    <button class="sec" data-tab="squads">Squads</button>
     <button class="sec admin-only" data-tab="setup">Setup</button>
     <span id="modeBadge" class="badge">Viewer</span>
     <button class="sec" id="loginBtn">Admin login</button>
@@ -90,9 +95,18 @@
   <!-- GROUPS -->
   <section id="tab-groups">
     <div id="groupsView"></div>
+    <div class="card" id="scorersView"></div>
+    <div class="card" id="cardsView"></div>
+    <div class="card" id="suspView"></div>
     <div class="card admin-only"><button id="genKO">Generate knockout bracket from standings</button>
       <span class="mut">Top teams per group advance. Re-generating clears knockout scores.</span></div>
   </section>
+
+  <!-- SQUADS -->
+  <section id="tab-squads" class="hidden"><div id="squadsView"></div></section>
+
+  <!-- MATCH PAGE -->
+  <section id="tab-match" class="hidden"><div class="card" id="matchView"></div></section>
 
   <!-- KNOCKOUT -->
   <section id="tab-knockout" class="hidden">
@@ -117,7 +131,7 @@ const LS_KEY = 'football_tournament_v1';
 let isAdmin = false, online = false, db = null, auth = null;
 let S = blank();
 
-function blank(){ return {name:'My Cup 2026', qualifiers:2, groups:[], teams:[], matches:[], ko:null}; }
+function blank(){ return {name:'My Cup 2026', qualifiers:2, groups:[], teams:[], matches:[], ko:null, goals:{}, cards:{}, squads:{}}; }
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const team = id => S.teams.find(t => t.id === id);
@@ -205,10 +219,13 @@ $('genFixtures').onclick = () => {
     if (c < 2) return alert(`Group ${g} needs at least 2 teams.`);
     if (S.qualifiers > c) return alert(`Group ${g} has fewer teams than the qualifiers per group.`);
   }
-  S.matches = []; S.ko = null; let mid = 1;
+  S.matches = []; S.ko = null; S.goals = {}; S.cards = {}; S.fouls = {}; S.clocks = {}; let mid = 1;
   for (const g of S.groups){
     const ids = S.teams.filter(t => t.group === g).map(t => t.id);
-    roundRobin(ids).forEach((rnd, r) => rnd.forEach(([h, a]) => S.matches.push({id: mid++, group: g, md: r + 1, home: h, away: a, hs: null, as: null})));
+    let n = 1;
+    for (let i = 0; i < ids.length; i++)
+      for (let j = i + 1; j < ids.length; j++)
+        S.matches.push({id: mid++, group: g, md: n++, home: ids[i], away: ids[j], hs: null, as: null});
   }
   save(); render(); showTab('groups');
 };
@@ -252,6 +269,9 @@ $('genKO').onclick = () => {
   const first = [];
   for (let i = 0; i < size / 2; i++) first.push({home: seeds[i] ?? null, away: seeds[size - 1 - i] ?? null});
   // order the first round so top seeds land in opposite halves
+  Object.keys(S.goals || {}).forEach(k => { if (k[0] === 'k') delete S.goals[k]; });
+  Object.keys(S.cards || {}).forEach(k => { if (k[0] === 'k') delete S.cards[k]; });
+  ['fouls','clocks'].forEach(f => Object.keys(S[f] || {}).forEach(k => { if (k[0] === 'k') delete S[f][k]; }));
   S.ko = {size, first: bracketOrder(size / 2).map(i => first[i]), results: {}};
   save(); render(); showTab('knockout');
 };
@@ -288,6 +308,8 @@ function stillValid(){ return true; } // keep later scores; team names update au
 
 /* ---------- render ---------- */
 function render(){
+  S.goals = S.goals || {}; S.cards = S.cards || {}; S.squads = S.squads || {}; S.fouls = S.fouls || {}; S.clocks = S.clocks || {};
+  try { renderScorers(); renderCards(); renderSuspensions(); renderSquads(); if (currentMatch && !$('tab-match').classList.contains('hidden')) renderMatch(); } catch(e){ console.warn(e); }
   $('title').textContent = '⚽ ' + (S.name || 'Football Tournament');
   $('modeBadge').textContent = isAdmin ? 'Admin' : 'Viewer';
   $('modeBadge').className = 'badge' + (isAdmin ? ' admin' : '');
@@ -303,8 +325,8 @@ function render(){
     const st = standings(g);
     const tbl = `<table><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>
       ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td>${r.GF-r.GA}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table>`;
-    const ms = S.matches.filter(m => m.group === g).map(m => `<div class="match"><span class="badge">MD${m.md}</span>
-      <span class="t r">${esc(tname(m.home))}</span>${scoreCell(`gm(${m.id},'hs',this.value)`, m.hs)} : ${scoreCell(`gm(${m.id},'as',this.value)`, m.as)}<span class="t">${esc(tname(m.away))}</span></div>`).join('');
+    const ms = S.matches.filter(m => m.group === g).map(m => `<div class="match"><span class="badge">M${m.md}</span>
+      <span class="t r">${esc(tname(m.home))}</span>${scoreCell(`gm(${m.id},'hs',this.value)`, m.hs)} : ${scoreCell(`gm(${m.id},'as',this.value)`, m.as)}<span class="t">${esc(tname(m.away))}</span><button class="sec mini" onclick="openMatch('g${m.id}')">Details</button></div>${goalLine('g'+m.id)}`).join('');
     return `<div class="card"><h2>Group ${g}</h2>${tbl}<h3 style="margin-top:14px">Fixtures</h3>${ms}</div>`;
   }).join('')}</div>`;
 
@@ -316,7 +338,7 @@ function render(){
     const tied = ready && m.hs != null && m.hs === m.as;
     const line = (id, sf, pf) => `<div class="row"><span class="${m.winner === id && id != null ? 'w' : ''}">${esc(id === undefined ? 'TBD' : tname(id))}</span>
       <span>${ready ? scoreCell(`setKO(${m.r},${m.i},'${sf}',this.value)`, m[sf]) : ''}${tied ? ' ' + scoreCell(`setKO(${m.r},${m.i},'${pf}',this.value)`, m[pf], 'pen') : ''}</span></div>`;
-    return `<div class="ko">${line(m.home, 'hs', 'ph')}${line(m.away, 'as', 'pa')}${tied ? '<div class="mut">Penalties</div>' : ''}</div>`;
+    return `<div class="ko">${line(m.home, 'hs', 'ph')}${line(m.away, 'as', 'pa')}${tied ? '<div class="mut">Penalties</div>' : ''}${ready ? `<button class="sec mini" onclick="openMatch('k${m.r}-${m.i}')">Details</button>${goalLine(`k${m.r}-${m.i}`)}` : ''}</div>`;
   }).join('')}</div>`).join('');
   const champ = rounds.at(-1)[0].winner;
   $('champ').innerHTML = champ != null ? `<div class="champ">🏆 Champion: <b>${esc(tname(champ))}</b></div>` : '';
@@ -326,8 +348,260 @@ function scoreCell(handler, v, cls = 'score'){
 }
 function gm(id, field, val){ const m = S.matches.find(x => x.id === id); m[field] = val === '' ? null : Math.max(0, parseInt(val)); save(); render(); }
 
+/* ---------- match page & goals ---------- */
+let currentMatch = null, prevTab = 'groups';
+function getMatch(key){
+  if (key[0] === 'g'){
+    const m = S.matches.find(x => x.id === +key.slice(1)); if (!m) return null;
+    return {home: m.home, away: m.away, hs: m.hs, as: m.as, title: `Group ${m.group} · Match ${m.md}`,
+            set: (f, v) => { m[f] = v; }};
+  }
+  if (!S.ko) return null;
+  const [r, i] = key.slice(1).split('-').map(Number);
+  const rounds = koRounds(), m = rounds[r]?.[i]; if (!m) return null;
+  return {home: m.home, away: m.away, hs: m.hs, as: m.as, ph: m.ph, pa: m.pa, title: roundName(rounds[r].length * 2),
+          set: (f, v) => { const k = `${r}-${i}`; S.ko.results[k] = S.ko.results[k] || {}; S.ko.results[k][f] = v; }};
+}
+const goalsOf = key => (S.goals[key] || []).slice().sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || (a.plus||0) - (b.plus||0));
+const cardsOf = key => (S.cards[key] || []).slice().sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || (a.plus||0) - (b.plus||0));
+const cardIcon = c => c.color === 'Red' ? '🟥' : '🟨';
+function goalLine(key){
+  const g = goalsOf(key), c = cardsOf(key); if (!g.length && !c.length) return '';
+  return `<div class="gl">${c.map(x => `<span>${cardIcon(x)} ${esc(x.player || 'TBC')} ${fmtMin(x)}</span>`).join('')}${g.map(x => `<span>⚽ ${esc(x.player || 'TBC')} ${fmtMin(x)}${x.type ? ' (' + x.type + ')' : ''} <i>${esc(tname(x.team))}</i></span>`).join('')}</div>`;
+}
+function openMatch(key){
+  const t = ['groups','knockout'].find(x => !$('tab-' + x).classList.contains('hidden'));
+  if (t) prevTab = t;
+  currentMatch = key; renderMatch(); showTab('match');
+}
+function syncScore(){
+  const m = getMatch(currentMatch), g = S.goals[currentMatch] || [];
+  m.set('hs', g.filter(x => x.team === m.home).length);
+  m.set('as', g.filter(x => x.team === m.away).length);
+}
+const halfLen = () => S.halfLen || 45;
+function clockNow(c){
+  if (!c || !c.phase) return null;
+  if (c.phase === 'HT') return {min: halfLen(), plus: 0};
+  if (c.phase === 'FT') return c.end || {min: 2 * halfLen(), plus: 0};
+  const base = c.phase === '2H' ? halfLen() : 0;
+  const el = Math.floor((Date.now() - c.t) / 60000) + 1;
+  return el > halfLen() ? {min: base + halfLen(), plus: el - halfLen()} : {min: base + el, plus: 0};
+}
+const fmtMin = e => e && e.min != null ? `${e.min}${e.plus ? '+' + e.plus : ''}'` : '';
+function clockLabel(c){
+  if (!c || !c.phase) return 'Not started';
+  const n = clockNow(c), t = {'1H': '1st half', 'HT': 'Half time', '2H': '2nd half', 'FT': 'Full time'}[c.phase];
+  if (c.phase === '1H' || c.phase === '2H'){
+    const s = Math.floor((Date.now() - c.t) / 1000) % 60;
+    return `${t} · ${fmtMin(n)} <span class="mut">(${String(s).padStart(2,'0')}s)</span>`;
+  }
+  return t;
+}
+function setClock(phase){
+  S.clocks = S.clocks || {};
+  const c = S.clocks[currentMatch] || {};
+  if (phase === 'reset'){ if (!confirm('Reset the match clock?')) return; delete S.clocks[currentMatch]; }
+  else { if (phase === 'FT') c.end = clockNow(c); c.phase = phase; if (phase === '1H' || phase === '2H') c.t = Date.now(); S.clocks[currentMatch] = c; }
+  save(); renderMatch();
+}
+setInterval(() => { const el = $('clock'); if (el && currentMatch) el.innerHTML = clockLabel((S.clocks || {})[currentMatch]); }, 1000);
+
+const KINDS = {goals: 'gid', cards: 'cid', fouls: 'fid'};
+const storeOf = kind => kind === 'fouls' ? (S.fouls = S.fouls || {}) : S[kind];
+function events(){
+  const k = currentMatch, out = [];
+  (S.goals[k] || []).forEach(e => out.push({...e, kind: 'goals', id: e.gid, label: e.type === 'Own goal' ? '⚽ Own goal' : e.type === 'Penalty' ? '⚽ Penalty goal' : '⚽ Goal'}));
+  (S.cards[k] || []).forEach(e => out.push({...e, kind: 'cards', id: e.cid, label: cardIcon(e) + ' ' + e.color + ' card'}));
+  ((S.fouls || {})[k] || []).forEach(e => out.push({...e, kind: 'fouls', id: e.fid, label: '⚠️ Foul'}));
+  return out.sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || (a.plus || 0) - (b.plus || 0) || String(a.id).localeCompare(String(b.id)));
+}
+function logEvent(kind, team, extra){
+  const now = clockNow((S.clocks || {})[currentMatch]);
+  if (!now && !confirm('The match clock is not running. Log this event without a time? (You can type the minute later.)')) return;
+  const store = storeOf(kind);
+  const ev = {[KINDS[kind]]: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), team, player: '', min: now ? now.min : null, plus: now ? now.plus : 0, ...extra};
+  (store[currentMatch] = store[currentMatch] || []).push(ev);
+  if (kind === 'goals') syncScore();
+  save(); render(); renderMatch();
+}
+function editEvent(kind, id, field, val){
+  const ev = (storeOf(kind)[currentMatch] || []).find(e => e[KINDS[kind]] === id); if (!ev) return;
+  if (field === 'min'){ const m = String(val).match(/^\s*(\d+)\s*(?:\+\s*(\d+))?/); ev.min = m ? +m[1] : null; ev.plus = m && m[2] ? +m[2] : 0; }
+  else if (field === 'player' && val === '__other'){ const n = prompt('Player name:'); if (!n) return renderMatch(); ev.player = n.trim(); }
+  else ev[field] = val;
+  if (kind === 'cards' && field === 'player' && ev.color === 'Yellow' && ev.player){
+    const list = S.cards[currentMatch], same = c => c.team === ev.team && c.player && c.player.toLowerCase() === ev.player.toLowerCase();
+    if (list.filter(c => same(c) && c.color === 'Yellow').length === 2 && !list.some(c => same(c) && c.color === 'Red')
+        && confirm(ev.player + ' now has 2 yellow cards. Add a red card (sent off) too?'))
+      list.push({cid: Date.now().toString(36) + 'r', team: ev.team, player: ev.player, min: ev.min, plus: ev.plus, color: 'Red'});
+  }
+  document.activeElement && document.activeElement.blur && document.activeElement.blur();
+  save(); render(); renderMatch();
+}
+function delEvent(kind, id){
+  if (!confirm('Delete this event?')) return;
+  const store = storeOf(kind);
+  store[currentMatch] = (store[currentMatch] || []).filter(e => e[KINDS[kind]] !== id);
+  if (kind === 'goals') syncScore();
+  save(); render(); renderMatch();
+}
+function playerSelect(ev){
+  const sq = squadOf(ev.team), hd = `onchange="editEvent('${ev.kind}','${ev.id}','player',this.value)"`;
+  if (!sq.length) return `<input value="${esc(ev.player)}" placeholder="Enter name later" ${hd}>`;
+  const known = !ev.player || sq.includes(ev.player);
+  return `<select ${hd}><option value="">– name later –</option>${sq.map(n => `<option ${n === ev.player ? 'selected' : ''}>${esc(n)}</option>`).join('')}
+    ${known ? '' : `<option selected>${esc(ev.player)}</option>`}<option value="__other">Other (type)…</option></select>`;
+}
+function renderMatch(){
+  const m = getMatch(currentMatch);
+  if (!m || m.home == null || m.away == null){ $('matchView').innerHTML = '<p class="mut">Match not available.</p>'; return; }
+  const ae = document.activeElement;
+  if (isAdmin && ae && $('matchView').contains(ae) && (ae.tagName === 'INPUT' || ae.tagName === 'SELECT')) return; // don't wipe while editing
+  const c = (S.clocks || {})[currentMatch], ph = c && c.phase;
+  const banned = suspensions().byMatch[currentMatch] || [];
+  const susp = banned.length ? `<div class="card" style="border-color:var(--err)"><b>🚫 Suspended for this match:</b> ${banned.map(b => `${esc(b.player)} (${esc(tname(b.team))}, ${esc(b.reason)})`).join(', ')}</div>` : '';
+  const pens = (m.ph != null && m.pa != null) ? `<p class="mut" style="text-align:center">Penalties: ${m.ph} – ${m.pa}</p>` : '';
+  const clockBtns = !isAdmin ? '' : `<p style="text-align:center">
+    ${!ph ? `<button onclick="setClock('1H')">▶ Start match</button>` : ''}
+    ${ph === '1H' ? `<button class="sec" onclick="setClock('HT')">⏸ Half time</button>` : ''}
+    ${ph === 'HT' ? `<button onclick="setClock('2H')">▶ Start 2nd half</button>` : ''}
+    ${ph === '2H' ? `<button class="danger" onclick="setClock('FT')">⏹ Full time</button>` : ''}
+    ${ph ? `<button class="sec mini" onclick="setClock('reset')">Reset clock</button>` : ''}
+    <span class="mut" style="margin-left:10px">Half length <input type="number" min="1" max="60" value="${halfLen()}" style="width:60px"
+      onchange="S.halfLen = Math.max(1, +this.value || 45); this.blur(); save(); renderMatch();"> min</span></p>`;
+  const teamPad = id => `<div class="card" style="flex:1;min-width:260px"><h3>${esc(tname(id))}</h3>
+    <button onclick="logEvent('goals',${id},{type:''})">⚽ Goal</button>
+    <button onclick="logEvent('goals',${id},{type:'Penalty'})">⚽ Penalty goal</button>
+    <button class="sec" onclick="logEvent('goals',${id},{type:'Own goal'})">Own goal (in favour)</button>
+    <p style="margin:8px 0 0"><button style="background:#facc15" onclick="logEvent('cards',${id},{color:'Yellow'})">🟨 Yellow</button>
+    <button class="danger" onclick="logEvent('cards',${id},{color:'Red'})">🟥 Red</button>
+    <button class="sec" onclick="logEvent('fouls',${id},{})">⚠️ Foul</button></p></div>`;
+  const pads = isAdmin ? `<div style="display:flex;gap:12px;flex-wrap:wrap">${teamPad(m.home)}${teamPad(m.away)}</div>
+    <p class="mut">Tap a button the moment it happens. The minute is taken from the match clock. Add player names below at any time. For fouls and cards, press the button of the team that committed it.</p>` : '';
+  const ev = events();
+  const list = ev.length ? `<table><tr><th>Min</th><th>Event</th><th>Team</th><th>Player</th>${isAdmin ? '<th></th>' : ''}</tr>
+    ${ev.map(e => `<tr><td>${isAdmin ? `<input style="width:64px" value="${fmtMin(e).replace("'", '')}" placeholder="min" onchange="editEvent('${e.kind}','${e.id}','min',this.value)">` : (fmtMin(e) || '–')}</td>
+      <td>${e.label}</td><td>${esc(tname(e.team))}</td>
+      <td>${isAdmin ? playerSelect(e) : (esc(e.player) || '<span class="mut">TBC</span>')}</td>
+      ${isAdmin ? `<td><button class="danger mini" onclick="delEvent('${e.kind}','${e.id}')">✕</button></td>` : ''}</tr>`).join('')}</table>`
+    : '<p class="mut">No events yet.</p>';
+  $('matchView').innerHTML = `<button class="sec" onclick="showTab(prevTab)">← Back</button>
+    <h2 style="text-align:center">${esc(m.title)}</h2>
+    <div class="mhead"><b>${esc(tname(m.home))}</b><span>${m.hs ?? '–'} : ${m.as ?? '–'}</span><b>${esc(tname(m.away))}</b></div>${pens}
+    <p style="text-align:center;font-size:1.1rem">⏱ <span id="clock">${clockLabel(c)}</span></p>
+    ${clockBtns}${susp}${pads}<h3>Match events</h3>${list}`;
+}
+/* ---------- suspensions ----------
+   Rules: a red card = banned for the team's next match.
+          every 2 yellow cards (over different matches) = banned for the next match.
+          a second yellow that became a red in the same match counts as a red only. */
+const RED_BAN = 1, YELLOWS_FOR_BAN = 2;
+function teamMatchKeys(team){
+  const keys = S.matches.filter(m => m.home === team || m.away === team).sort((a, b) => a.id - b.id)
+    .map(m => ({key: 'g' + m.id, played: m.hs != null && m.as != null}));
+  if (S.ko) koRounds().forEach(rnd => rnd.forEach(m => {
+    if ((m.home === team || m.away === team) && m.home != null && m.away != null)
+      keys.push({key: `k${m.r}-${m.i}`, played: m.hs != null && m.as != null});
+  }));
+  return keys;
+}
+function suspensions(){
+  const byMatch = {}, current = [], players = {};
+  Object.values(S.cards || {}).flat().filter(c => c.player).forEach(c => {
+    const k = c.player.toLowerCase() + '|' + c.team; players[k] = players[k] || {player: c.player, team: c.team};
+  });
+  Object.entries(players).forEach(([pk, pl]) => {
+    let pending = 0, yellows = 0, reason = '';
+    let nextBan = null;
+    for (const m of teamMatchKeys(pl.team)){
+      if (pending > 0){
+        (byMatch[m.key] = byMatch[m.key] || []).push({...pl, reason});
+        if (!m.played && !nextBan) nextBan = m.key;
+        pending--; continue;
+      }
+      const mine = (S.cards[m.key] || []).filter(c => c.team === pl.team && c.player.toLowerCase() + '|' + c.team === pk);
+      if (mine.some(c => c.color === 'Red')){ pending += RED_BAN; reason = 'Red card'; }
+      else {
+        yellows += mine.filter(c => c.color === 'Yellow').length;
+        while (yellows >= YELLOWS_FOR_BAN){ pending++; yellows -= YELLOWS_FOR_BAN; reason = YELLOWS_FOR_BAN + ' yellow cards'; }
+      }
+    }
+    if (nextBan){
+      const g = getMatch(nextBan);
+      current.push({...pl, reason: byMatch[nextBan].find(x => x.player === pl.player)?.reason || reason,
+        match: g ? `${g.title}: ${tname(g.home)} vs ${tname(g.away)}` : 'Next match'});
+    } else if (pending > 0) current.push({...pl, reason, match: 'Next match (not scheduled yet)'});
+  });
+  return {byMatch, current};
+}
+function renderSuspensions(){
+  const {current} = suspensions();
+  $('suspView').innerHTML = '<h2>Suspended players</h2>' + (current.length
+    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>Reason</th><th>Misses</th></tr>${current.map((r, i) => `<tr><td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td>${esc(r.reason)}</td><td>${esc(r.match)}</td></tr>`).join('')}</table>
+       <p class="mut">Rules: a red card means a ban for the next match. Every ${YELLOWS_FOR_BAN} yellow cards across matches also mean a ban for the next match.</p>`
+    : '<p class="mut">No players suspended.</p>');
+}
+/* ---------- squads (stored by team name, so they survive fixture regeneration) ---------- */
+const squadOf = teamId => S.squads[tname(teamId)] || [];
+function playerPicker(id, teamId){
+  const sq = squadOf(teamId);
+  if (!sq.length) return `<span id="${id}Wrap"><input id="${id}" placeholder="Player name"></span>`;
+  return `<span id="${id}Wrap"><select id="${id}" onchange="$('${id}Other').classList.toggle('hidden', this.value !== '__other')">
+    <option value="">– Select player –</option>${sq.map(n => `<option>${esc(n)}</option>`).join('')}<option value="__other">Other (type name)…</option></select>
+    <input id="${id}Other" class="hidden" placeholder="Player name"></span>`;
+}
+function swapPicker(id, teamId){ $(id + 'Wrap').outerHTML = playerPicker(id, +teamId); }
+function pickedPlayer(id){
+  const el = $(id); if (el.value === '__other') return $(id + 'Other').value.trim();
+  return el.value.trim();
+}
+function renderSquads(){
+  if (!S.teams.length){ $('squadsView').innerHTML = '<div class="card mut">No teams yet.</div>'; return; }
+  if (isAdmin && document.activeElement && document.activeElement.classList.contains('sqText')) return; // don't overwrite while typing
+  $('squadsView').innerHTML = (isAdmin ? `<div class="card"><p class="mut">Enter one player per line (you can add a shirt number, e.g. "10 Ahmed"). Click Save squads when done.</p>
+      <button onclick="saveSquads()">Save squads</button></div>` : '') +
+    `<div class="grid">${S.groups.map(g => S.teams.filter(t => t.group === g).map(t => {
+      const sq = S.squads[t.name] || [];
+      return `<div class="card"><h3>${esc(t.name)} <span class="badge">Group ${g}</span> <span class="badge">${sq.length} players</span></h3>` +
+        (isAdmin ? `<textarea class="sqText" data-team="${esc(t.name)}" rows="8" style="width:100%;background:#0b1222;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:7px">${esc(sq.join('\n'))}</textarea>`
+                 : (sq.length ? `<ol style="margin:0;padding-left:20px">${sq.map(n => `<li>${esc(n)}</li>`).join('')}</ol>` : '<p class="mut">Squad not entered yet.</p>'));
+    }).join('')).join('')}</div>`;
+}
+function saveSquads(){
+  document.querySelectorAll('.sqText').forEach(t => {
+    const names = [...new Set(t.value.split('\n').map(s => s.trim()).filter(Boolean))];
+    S.squads[t.dataset.team] = names;
+  });
+  document.activeElement && document.activeElement.blur();
+  save(); render(); alert('Squads saved.');
+}
+function renderCards(){
+  const t = {};
+  Object.values(S.cards || {}).flat().filter(c => c.player).forEach(c => {
+    const k = c.player.toLowerCase() + '|' + c.team;
+    t[k] = t[k] || {player: c.player, team: c.team, y: 0, r: 0};
+    c.color === 'Red' ? t[k].r++ : t[k].y++;
+  });
+  const rows = Object.values(t).sort((a, b) => b.r - a.r || b.y - a.y || a.player.localeCompare(b.player));
+  $('cardsView').innerHTML = '<h2>Disciplinary (cards)</h2>' + (rows.length
+    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>🟨</th><th>🟥</th></tr>${rows.map((r, i) => `<tr><td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td>${r.y}</td><td>${r.r}</td></tr>`).join('')}</table>`
+    : '<p class="mut">No cards recorded yet.</p>');
+}
+function renderScorers(){
+  const tally = {};
+  Object.values(S.goals || {}).flat().filter(g => g.player && g.type !== 'Own goal').forEach(g => {
+    const k = g.player.toLowerCase() + '|' + g.team;
+    tally[k] = tally[k] || {player: g.player, team: g.team, n: 0}; tally[k].n++;
+  });
+  const rows = Object.values(tally).sort((a, b) => b.n - a.n || a.player.localeCompare(b.player));
+  $('scorersView').innerHTML = `<h2>Top scorers</h2>` + (rows.length
+    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>Goals</th></tr>${rows.map((r, i) => `<tr><td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td><b>${r.n}</b></td></tr>`).join('')}</table>`
+    : '<p class="mut">No goals recorded yet.</p>');
+}
+
 /* ---------- tabs & data ---------- */
-function showTab(t){ ['setup','groups','knockout'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
+function showTab(t){ ['setup','groups','knockout','match','squads'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
   document.querySelectorAll('nav [data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t)); }
 document.querySelectorAll('nav [data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 $('exportBtn').onclick = () => { const a = document.createElement('a');
