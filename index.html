@@ -220,9 +220,9 @@ function roundRobin(ids){
     const rnd = [];
     for (let i = 0; i < n / 2; i++){
       const h = t[i], a = t[n - 1 - i];
-      if (h != null && a != null) rnd.push(r % 2 ? [a, h] : [h, a]);
+      if (h != null && a != null) rnd.push(h < a ? [h, a] : [a, h]);
     }
-    rounds.push(rnd); t.splice(1, 0, t.pop());
+    rnd.sort((x, y) => x[0] - y[0]); rounds.push(rnd); t.splice(1, 0, t.pop());
   }
   return rounds;
 }
@@ -236,7 +236,7 @@ function standings(g){
     h.P++; a.P++; h.GF += m.hs; h.GA += m.as; a.GF += m.as; a.GA += m.hs;
     if (m.hs > m.as){ h.W++; a.L++; h.Pts += 3; } else if (m.hs < m.as){ a.W++; h.L++; a.Pts += 3; } else { h.D++; a.D++; h.Pts++; a.Pts++; }
   });
-  return Object.values(rows).sort((x, y) => y.Pts - x.Pts || (y.GF-y.GA) - (x.GF-x.GA) || y.GF - x.GF || tname(x.id).localeCompare(tname(y.id)));
+  return Object.values(rows).sort((x, y) => y.Pts - x.Pts || (y.GF-y.GA) - (x.GF-x.GA) || y.GF - x.GF || x.id - y.id);
 }
 
 /* ---------- knockout ---------- */
