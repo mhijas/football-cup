@@ -47,6 +47,107 @@
 .sqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;align-items:start}
   .sqgrid .card{margin:0}
   .sqText{width:100%;min-height:220px;resize:vertical;background:#0b1222;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:7px;font:inherit}
+
+/* ===== Theme: colourful & elegant ===== */
+:root{--bg:#0b1026;--card:#141a3a;--line:#2a3366;--txt:#eef1ff;--mut:#9aa3d1;--acc:#14b8a6;--acc2:#8b5cf6;--warn:#f59e0b;--err:#f43f5e;--gold:#fbbf24}
+body{background:radial-gradient(1200px 600px at 10% -10%,#2b1a5e 0%,transparent 60%),radial-gradient(900px 500px at 110% 10%,#0e4b5a 0%,transparent 55%),var(--bg);background-attachment:fixed}
+header{position:sticky;top:0;z-index:30;justify-content:flex-start;padding:12px 16px;background:linear-gradient(90deg,#1e1b4b,#312e81 45%,#0f766e);border:0;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+header h1{flex:1;font-size:1.15rem;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01)),var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+h2{color:#c4b5fd;font-size:1.2rem;margin-top:0} h3{color:#5eead4}
+button{background:linear-gradient(135deg,var(--acc),#0ea5e9);color:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(20,184,166,.3)}
+button.sec{background:#232b5c;color:var(--txt);box-shadow:none}
+button.danger{background:linear-gradient(135deg,#f43f5e,#e11d48)}
+.badge{background:#232b5c;color:#c7d2fe}
+.badge.admin{background:linear-gradient(135deg,var(--gold),#f97316);color:#1a1033}
+tr.q td{background:rgba(20,184,166,.14)} tr.q td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
+th{color:#a5b4fc;font-weight:600}
+.ko{background:#10163a;border:1px solid var(--line);border-radius:12px;transition:transform .15s,border-color .15s}
+.ko:hover{border-color:var(--acc2);transform:translateY(-1px)}
+.ko .w{color:#5eead4} .round h3{color:#c4b5fd}
+.champ{color:var(--gold)}
+input,select,textarea{background:#0d1330;border-color:var(--line)}
+/* hamburger + drawer */
+.burger{background:transparent;box-shadow:none;padding:6px;width:40px;height:40px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.burger span{display:block;height:3px;border-radius:2px;background:#fff}
+#sideNav{position:fixed;top:0;left:0;bottom:0;width:260px;z-index:50;background:linear-gradient(180deg,#1e1b4b,#111633);padding:16px 12px;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column;gap:6px;box-shadow:6px 0 24px rgba(0,0,0,.5)}
+#sideNav.open{transform:none}
+#sideNav .navhead{font-weight:700;font-size:1.1rem;padding:6px 10px 12px;color:#c4b5fd}
+#sideNav button{background:transparent;box-shadow:none;text-align:left;padding:12px 14px;font-size:1rem;color:var(--txt);border-radius:10px;margin:0}
+#sideNav button:hover{background:rgba(139,92,246,.18)}
+#sideNav button.active{outline:0;background:linear-gradient(90deg,rgba(139,92,246,.45),rgba(20,184,166,.25))}
+#sideNav hr{border:0;border-top:1px solid var(--line);width:100%}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40;display:none}
+#overlay.show{display:block}
+.mno{background:linear-gradient(135deg,var(--acc2),#6366f1);color:#fff}
+/* mobile */
+@media (max-width:700px){
+  main{padding:10px}
+  .card{padding:12px;border-radius:12px}
+  .grid,.sqgrid{grid-template-columns:1fr}
+  table{font-size:.82rem} th,td{padding:5px 4px}
+  .match{flex-wrap:wrap;font-size:.92rem}
+  .match .t{min-width:30%}
+  .mhead{font-size:1.15rem;gap:10px}
+  .mhead b{flex:1;text-align:center}
+  #matchView button{margin-bottom:6px}
+  #matchView input{max-width:100%}
+  #matchView table{display:block;overflow-x:auto}
+  .bracket{gap:10px}.round{min-width:200px}
+  header h1{font-size:1rem}
+}
+
+/* ===== Layout like reference: navy sidebar + light content ===== */
+:root{--bg:#eef1f6;--card:#ffffff;--line:#dfe4ee;--txt:#1b2343;--mut:#6b7391;--acc:#5b4bb7;--acc2:#5b4bb7;--navy:#13235b;--navy2:#2c3d78}
+body{background:var(--bg);color:var(--txt)}
+header{background:#fff;color:var(--txt);box-shadow:0 1px 0 var(--line);padding:10px 16px}
+header h1{color:var(--navy)}
+.burger span{background:var(--navy)}
+.card{background:#fff;border:1px solid var(--line);box-shadow:0 2px 10px rgba(19,35,91,.06);border-radius:14px}
+h2{color:var(--navy)} h3{color:#3b3f8f}
+button{background:var(--acc);color:#fff;box-shadow:none;border-radius:999px;padding:8px 16px}
+button.mini{border-radius:999px}
+button.sec{background:#e8ebf5;color:var(--navy)}
+button.danger{background:#e5484d}
+.badge{background:#e8ebf5;color:#3b4675}
+.mno{background:var(--navy);color:#fff}
+.badge.admin{background:#f5b301;color:#1b1b1b}
+th{color:#5a6390} tr.q td{background:#ecebfb} tr.q td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
+input,select,textarea,.sqText{background:#fff;color:var(--txt);border:1px solid #cfd6e6}
+.ko{background:#f7f8fc;border:1px solid var(--line)} .ko:hover{border-color:var(--acc)}
+.ko .w{color:#2f8f5b} .round h3{color:var(--navy)}
+.match{border-bottom:1px dashed var(--line)}
+.fx{padding:10px 0;border-bottom:1px solid var(--line)} .fx:last-child{border-bottom:0}
+.fxmeta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.85rem;color:var(--mut)}
+.dayh{margin:0 0 4px;color:var(--navy)}
+.champ{color:#b7791f}
+#status{background:#fff!important;border-bottom:1px solid var(--line)}
+/* sidebar */
+#sideNav{background:var(--navy);width:270px;padding:18px 12px;gap:2px;overflow-y:auto}
+#sideNav .brand{color:#fff;font-weight:700;font-size:1.1rem;padding:4px 12px 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sideNav .navsec{color:#c9d2f0;font-size:.78rem;font-weight:700;padding:14px 12px 6px}
+#sideNav button{color:#dfe5fa;border-radius:10px;padding:11px 14px;font-size:.98rem;display:flex;gap:12px;align-items:center;background:transparent}
+#sideNav button i{font-style:normal;width:22px;text-align:center}
+#sideNav button:hover{background:rgba(255,255,255,.07)}
+#sideNav button.active{background:var(--navy2);color:#fff;font-weight:700}
+#sideNav .navsec.hidden,#sideNav button.hidden{display:none}
+@media (min-width:901px){
+  #sideNav{transform:none;box-shadow:none}
+  .burger{display:none}
+  header,main,#status{margin-left:270px}
+  main{max-width:none;padding:24px 32px}
+  #overlay{display:none!important}
+}
+.ko.skel{border-style:dashed;background:#fafbff}
+.ko.skel .row span{color:#3b4675;font-weight:600}
+.fxscore{min-width:64px;text-align:center;display:inline-block;font-size:1.05rem}
+#ovView.ovClosed{background:transparent;border:0;box-shadow:none;padding:0;margin-bottom:12px}
+.loginCard{max-width:400px;margin:40px auto;padding:28px}
+.loginCard label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 0;color:var(--navy)}
+.loginCard input{width:100%;margin-top:6px;padding:11px 12px;font-size:1rem;border-radius:10px}
+.lgIcon{width:72px;height:72px;margin:0 auto 10px;border-radius:50%;background:#e8ebf5;display:flex;align-items:center;justify-content:center;font-size:2rem}
+.lgErr{background:#fdecec;color:#b42318;border-radius:8px;padding:8px 10px;margin-top:10px;font-size:.9rem}
+.loginCard a{color:var(--acc);text-decoration:none;font-size:.9rem}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -54,24 +155,31 @@
 </head>
 <body>
 <header>
+  <button id="menuBtn" class="burger" aria-label="Menu" onclick="toggleMenu()"><span></span><span></span><span></span></button>
   <h1 id="title">⚽ Football Tournament</h1>
-  <nav>
-    <button class="sec" data-tab="home">Home</button>
-    <button class="sec" data-tab="groups">Groups & Fixtures</button>
-    <button class="sec" data-tab="knockout">Knockout</button>
-    <button class="sec" data-tab="squads">Squads</button>
-    <button class="sec admin-only" data-tab="setup">Setup</button>
-    <span id="modeBadge" class="badge">Viewer</span>
-    <button class="sec" id="loginBtn">Login</button>
-  </nav>
+  <span id="modeBadge" class="badge">Viewer</span>
 </header>
+<div id="overlay" onclick="toggleMenu(false)"></div>
+<nav id="sideNav">
+  <div class="brand">⚽ <span id="brandName">Tournament</span></div>
+  <div class="navsec">Tournament</div>
+  <button data-tab="home"><i>🏠</i>Home</button>
+  <button data-tab="fixtures"><i>📅</i>Fixtures & Schedule</button>
+  <button data-tab="groups"><i>📊</i>Groups & Standings</button>
+  <button data-tab="knockout"><i>🏆</i>Knockout</button>
+  <button data-tab="squads"><i>👥</i>Squads</button>
+  <div class="navsec admin-only">Organizer</div>
+  <button class="admin-only" data-tab="setup"><i>🗂️</i>Organizer page</button>
+  <div class="navsec">User</div>
+  <button id="loginBtn">🔐 Login</button>
+</nav>
 <div id="status" class="mut" style="padding:6px 20px;background:#020617"></div>
 
 <main>
   <!-- SETUP -->
   <section id="tab-setup" class="hidden">
     <div class="card">
-      <h2>1. Tournament details</h2>
+      <h2>🗂️ Organizer page</h2><h3>1. Tournament details</h3>
       <p><label>Name <input id="tName" value="My Cup 2026"></label></p>
       <p>
         <label>Number of teams <input id="nTeams" type="number" min="2" max="64" value="8" style="width:80px"></label>
@@ -109,6 +217,29 @@
     </div>
   </section>
 
+  <!-- LOGIN -->
+  <section id="tab-login" class="hidden">
+    <div class="card loginCard">
+      <div class="lgIcon">🔐</div>
+      <h2 style="text-align:center;margin-bottom:4px">Sign in</h2>
+      <p class="mut" style="text-align:center;margin-top:0">For organizers and team managers. Viewers don't need to sign in.</p>
+      <form id="loginForm" onsubmit="doLogin(event)">
+        <label id="lgEmailWrap">Email<input id="lgEmail" type="email" autocomplete="username" placeholder="you@example.com"></label>
+        <label>Password<input id="lgPw" type="password" autocomplete="current-password" placeholder="Password"></label>
+        <div id="lgErr" class="lgErr hidden"></div>
+        <button type="submit" id="lgBtn" style="width:100%;margin-top:8px">Sign in</button>
+      </form>
+      <p style="text-align:center"><a href="#" id="lgForgot" onclick="forgotPw(event)">Forgot password?</a></p>
+      <p style="text-align:center"><a href="#" onclick="event.preventDefault(); showTab('home')">← Back to home</a></p>
+    </div>
+  </section>
+
+  <!-- FIXTURES -->
+  <section id="tab-fixtures" class="hidden">
+    <div class="card"><h2>📅 Fixtures & Schedule</h2><p class="mut" id="fxNote">Full match schedule in order of play.</p></div>
+    <div id="fixturesView"></div>
+  </section>
+
   <!-- HOME -->
   <section id="tab-home" class="hidden"><div id="homeView"></div></section>
 
@@ -130,6 +261,7 @@
 
   <!-- KNOCKOUT -->
   <section id="tab-knockout" class="hidden">
+    <div class="card admin-only" id="ovView"></div>
     <div class="card"><div id="koView" class="bracket"><span class="mut">Knockout bracket not generated yet.</span></div>
     <div id="champ"></div>
     <p class="mut">If a knockout match is level, the admin enters penalty scores (small boxes) to decide the winner.</p></div>
@@ -205,17 +337,45 @@ async function load(){
 
 /* ---------- admin ---------- */
 $('loginBtn').onclick = async () => {
-  if (isAdmin || role){ if (online) await auth.signOut(); isAdmin = false; role = null; myTeam = null; return safeRender(); }
+  toggleMenu(false);
+  if (isAdmin || role){
+    if (!confirm('Log out?')) return;
+    if (online) await auth.signOut();
+    isAdmin = false; role = null; myTeam = null; showTab('home'); return safeRender();
+  }
+  $('lgErr').classList.add('hidden'); $('lgPw').value = '';
+  $('lgEmailWrap').classList.toggle('hidden', !online);
+  $('lgForgot').classList.toggle('hidden', !online);
+  showTab('login'); setTimeout(() => (online ? $('lgEmail') : $('lgPw')).focus(), 50);
+};
+function lgError(msg){ $('lgErr').textContent = msg; $('lgErr').classList.remove('hidden'); }
+async function doLogin(e){
+  e.preventDefault();
+  const email = $('lgEmail').value.trim(), pw = $('lgPw').value;
   if (!online){
-    const p = prompt('Demo admin password (offline mode):');
-    if (p === 'admin123'){ isAdmin = true; safeRender(); } else if (p != null) alert('Wrong password');
+    if (pw === 'admin123'){ isAdmin = true; safeRender(); showTab('home'); } else lgError('Wrong password.');
     return;
   }
-  const email = prompt('Email (admin or team manager):'); if (!email) return;
-  const pw = prompt('Password:'); if (!pw) return;
-  try { await auth.signInWithEmailAndPassword(email.trim(), pw); }
-  catch(e){ alert('Login failed: ' + e.message); }
-};
+  if (!email || !pw) return lgError('Enter your email and password.');
+  $('lgBtn').disabled = true; $('lgBtn').textContent = 'Signing in…';
+  try {
+    await auth.signInWithEmailAndPassword(email, pw);
+    $('lgPw').value = ''; showTab('home');
+  } catch(err){
+    const c = err.code || '';
+    lgError(c.includes('invalid') || c.includes('wrong-password') || c.includes('user-not-found') ? 'Incorrect email or password.'
+      : c.includes('too-many-requests') ? 'Too many attempts. Please wait a few minutes and try again.'
+      : c.includes('unauthorized-domain') ? 'This website is not authorised in Firebase (add it under Authentication → Settings → Authorized domains).'
+      : 'Sign-in failed: ' + err.message);
+  } finally { $('lgBtn').disabled = false; $('lgBtn').textContent = 'Sign in'; }
+}
+async function forgotPw(e){
+  e.preventDefault();
+  const email = $('lgEmail').value.trim();
+  if (!email) return lgError('Enter your email above first, then click "Forgot password?".');
+  try { await auth.sendPasswordResetEmail(email); $('lgErr').classList.add('hidden'); alert('If this email has an account, a reset link has been sent to ' + email + '.'); }
+  catch(err){ lgError(err.message); }
+}
 $('changePw').onclick = async () => {
   if (!online) return alert('Available once Firebase is configured.');
   try { await auth.sendPasswordResetEmail(auth.currentUser.email); alert('Password reset email sent to ' + auth.currentUser.email); }
@@ -257,7 +417,7 @@ $('genFixtures').onclick = () => {
     if (c < 2) return alert(`Group ${g} needs at least 2 teams.`);
     if (S.qualifiers > c) return alert(`Group ${g} has fewer teams than the qualifiers per group.`);
   }
-  S.matches = []; S.ko = null; S.goals = {}; S.cards = {}; S.fouls = {}; S.clocks = {}; let mid = 1;
+  S.matches = []; S.ko = null; S.goals = {}; S.cards = {}; S.fouls = {}; S.clocks = {}; S.schedOv = {}; S.qualOv = {}; S.qualNote = {}; let mid = 1;
   for (const g of S.groups){
     const ids = S.teams.filter(t => t.group === g).map(t => t.id);
     let n = 1;
@@ -300,7 +460,7 @@ $('genKO').onclick = () => {
   const pending = S.matches.filter(m => m.hs === null || m.as === null).length;
   if (pending && !confirm(`${pending} group match(es) have no score yet. Generate anyway?`)) return;
   // seeds: all group winners, then all runners-up, ...
-  const tables = S.groups.map(g => standings(g)), seeds = [];
+  const tables = S.groups.map(g => finalOrder(g)), seeds = [];
   for (let pos = 0; pos < S.qualifiers; pos++) tables.forEach(t => t[pos] && seeds.push(t[pos].id));
   if (seeds.length < 2) return alert('Need at least 2 qualified teams.');
   let size = 2; while (size < seeds.length) size *= 2;
@@ -310,6 +470,8 @@ $('genKO').onclick = () => {
   Object.keys(S.goals || {}).forEach(k => { if (k[0] === 'k') delete S.goals[k]; });
   Object.keys(S.cards || {}).forEach(k => { if (k[0] === 'k') delete S.cards[k]; });
   ['fouls','clocks'].forEach(f => Object.keys(S[f] || {}).forEach(k => { if (k[0] === 'k') delete S[f][k]; }));
+  const plan = koPlan(tables.map(t => [t[0]?.id ?? null, t[1]?.id ?? null]));
+  if (plan){ S.ko = {size: plan.first.length * 2, first: plan.first, labels: plan.labels, results: {}}; save(); render(); showTab('knockout'); return; }
   S.ko = {size, first: bracketOrder(size / 2).map(i => first[i]), results: {}};
   save(); render(); showTab('knockout');
 };
@@ -347,11 +509,12 @@ function stillValid(){ return true; } // keep later scores; team names update au
 /* ---------- render ---------- */
 function render(){
   S.goals = S.goals || {}; S.cards = S.cards || {}; S.squads = S.squads || {}; S.fouls = S.fouls || {}; S.clocks = S.clocks || {};
-  try { renderScorers(); renderCards(); renderSuspensions(); renderSquads(); renderHome(); if (isAdmin) renderRoles(); if (currentMatch && !$('tab-match').classList.contains('hidden')) renderMatch(); } catch(e){ console.warn(e); }
+  try { renderScorers(); renderCards(); renderSuspensions(); renderSquads(); renderHome(); renderFixtures(); try { renderOverride(); } catch(e){} if (isAdmin) renderRoles();
+  $('brandName').textContent = S.name || 'Tournament'; if (currentMatch && !$('tab-match').classList.contains('hidden')) renderMatch(); } catch(e){ console.warn(e); }
   $('title').textContent = '⚽ ' + (S.name || 'Football Tournament');
   $('modeBadge').textContent = isAdmin ? 'Admin' : role === 'manager' ? 'Manager · ' + (myTeam || '?') : 'Viewer';
   $('modeBadge').className = 'badge' + (isAdmin ? ' admin' : '');
-  $('loginBtn').textContent = (isAdmin || role) ? 'Log out' : 'Login';
+  $('loginBtn').textContent = (isAdmin || role) ? '🚪 Log out' : '🔐 Login';
   document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !isAdmin));
   if (!isAdmin && !$('tab-setup').classList.contains('hidden')) showTab('home');
   $('tName').value = S.name; $('nQual').value = S.qualifiers;
@@ -365,20 +528,22 @@ function render(){
     const tbl = `<table><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>
       ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td>${r.GF-r.GA}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table>`;
     const sch = {}; try { allMatches().forEach(x => sch[x.key] = x); } catch(e){}
-    const ms = S.matches.filter(m => m.group === g).map(m => `<div class="mut" style="margin-top:6px">${sch['g'+m.id] ? dayLabel(sch['g'+m.id]) + fmtWhen(sch['g'+m.id].when) : ''}</div><div class="match"><span class="badge">M${m.md}</span>
+    const ms = S.matches.filter(m => m.group === g).map(m => `<div class="mut" style="margin-top:6px">${sch['g'+m.id] ? dayLabel(sch['g'+m.id]) + fmtWhen(sch['g'+m.id].when) : ''}</div><div class="match"><span class="badge mno">#${sch['g'+m.id] ? sch['g'+m.id].no : m.md}</span>
       <span class="t r">${esc(tname(m.home))}</span>${scoreCell(`gm(${m.id},'hs',this.value)`, m.hs)} : ${scoreCell(`gm(${m.id},'as',this.value)`, m.as)}<span class="t">${esc(tname(m.away))}</span><button class="sec mini" onclick="openMatch('g${m.id}')">Details</button></div>${goalLine('g'+m.id)}`).join('');
-    return `<div class="card"><h2>Group ${g}</h2>${tbl}<h3 style="margin-top:14px">Fixtures</h3>${ms}</div>`;
+    const ovn = (S.qualOv || {})[g] && S.qualOv[g].length ? `<p class="mut">⚖️ Qualifiers set by organizer: ${S.qualOv[g].map((id, i) => posLabel(i) + " " + esc(tname(id))).join(", ")}${S.qualNote?.[g] ? " — " + esc(S.qualNote[g]) : ""}</p>` : "";
+    return `<div class="card"><h2>Group ${g}</h2>${tbl}${ovn}</div>`;
   }).join('')}</div>`;
 
   // knockout
-  if (!S.ko){ $('koView').innerHTML = '<span class="mut">Knockout bracket not generated yet.</span>'; $('champ').innerHTML = ''; return; }
+  if (!S.ko){ $('koView').innerHTML = koSkeleton(); $('champ').innerHTML = ''; return; }
   const rounds = koRounds();
   $('koView').innerHTML = rounds.map(rnd => `<div class="round"><h3>${roundName(rnd.length * 2)}</h3>${rnd.map(m => {
     const ready = m.home !== undefined && m.away !== undefined && m.home !== null && m.away !== null;
     const tied = ready && m.hs != null && m.hs === m.as;
     const line = (id, sf, pf) => `<div class="row"><span class="${m.winner === id && id != null ? 'w' : ''}">${esc(id === undefined ? 'TBD' : tname(id))}</span>
       <span>${ready ? scoreCell(`setKO(${m.r},${m.i},'${sf}',this.value)`, m[sf]) : ''}${tied ? ' ' + scoreCell(`setKO(${m.r},${m.i},'${pf}',this.value)`, m[pf], 'pen') : ''}</span></div>`;
-    return `<div class="ko">${line(m.home, 'hs', 'ph')}${line(m.away, 'as', 'pa')}${tied ? '<div class="mut">Penalties</div>' : ''}${ready ? `<button class="sec mini" onclick="openMatch('k${m.r}-${m.i}')">Details</button>${goalLine(`k${m.r}-${m.i}`)}` : ''}</div>`;
+    const lbl = rnd.length > 1 ? `<div class="mut">${shortRound(rnd.length * 2)} ${m.r === 0 && S.ko.labels ? S.ko.labels[m.i] : m.i + 1}</div>` : '';
+    return `<div class="ko">${lbl}${line(m.home, 'hs', 'ph')}${line(m.away, 'as', 'pa')}${tied ? '<div class="mut">Penalties</div>' : ''}${ready ? `<button class="sec mini" onclick="openMatch('k${m.r}-${m.i}')">Details</button>${goalLine(`k${m.r}-${m.i}`)}` : ''}</div>`;
   }).join('')}</div>`).join('');
   const champ = rounds.at(-1)[0].winner;
   $('champ').innerHTML = champ != null ? `<div class="champ">🏆 Champion: <b>${esc(tname(champ))}</b></div>` : '';
@@ -393,13 +558,13 @@ let currentMatch = null, prevTab = 'home';
 function getMatch(key){
   if (key[0] === 'g'){
     const m = S.matches.find(x => x.id === +key.slice(1)); if (!m) return null;
-    return {home: m.home, away: m.away, hs: m.hs, as: m.as, title: `Group ${m.group} · Match ${m.md}`,
+    return {home: m.home, away: m.away, hs: m.hs, as: m.as, title: `Group ${m.group} · Match ${matchNo(key)}`,
             set: (f, v) => { m[f] = v; }};
   }
   if (!S.ko) return null;
   const [r, i] = key.slice(1).split('-').map(Number);
   const rounds = koRounds(), m = rounds[r]?.[i]; if (!m) return null;
-  return {home: m.home, away: m.away, hs: m.hs, as: m.as, ph: m.ph, pa: m.pa, title: roundName(rounds[r].length * 2),
+  return {home: m.home, away: m.away, hs: m.hs, as: m.as, ph: m.ph, pa: m.pa, title: roundName(rounds[r].length * 2) + ' · Match ' + matchNo(key),
           set: (f, v) => { const k = `${r}-${i}`; S.ko.results[k] = S.ko.results[k] || {}; S.ko.results[k][f] = v; }};
 }
 const goalsOf = key => (S.goals[key] || []).slice().sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || (a.plus||0) - (b.plus||0));
@@ -410,7 +575,7 @@ function goalLine(key){
   return `<div class="gl">${c.map(x => `<span>${cardIcon(x)} ${esc(x.player || 'TBC')} ${fmtMin(x)}</span>`).join('')}${g.map(x => `<span>⚽ ${esc(x.player || 'TBC')} ${fmtMin(x)}${x.type ? ' (' + x.type + ')' : ''} <i>${esc(tname(x.team))}</i></span>`).join('')}</div>`;
 }
 function openMatch(key){
-  const t = ['home','groups','knockout'].find(x => !$('tab-' + x).classList.contains('hidden'));
+  const t = ['home','fixtures','groups','knockout'].find(x => !$('tab-' + x).classList.contains('hidden'));
   if (t) prevTab = t;
   currentMatch = key; renderMatch(); showTab('match');
 }
@@ -715,6 +880,9 @@ function allMatches(){
     m.live = ['RUN', 'PAUSE'].includes(((S.clocks || {})[m.key] || {}).phase);
     m.ready = m.home !== undefined && m.away !== undefined;
   });
+  out.forEach(m => { const o = (S.schedOv || {})[m.key]; if (o && o.when) m.when = new Date(o.when); m.venue = (o && o.venue) || ''; });
+  out.sort((a, b) => a.when - b.when);
+  out.forEach((m, i) => m.no = i + 1);
   return out;
 }
 const fmtWhen = d => d.toLocaleDateString(undefined, {weekday: 'short', day: 'numeric', month: 'short'}) + ' · ' + d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
@@ -724,7 +892,7 @@ function matchCard(m, big){
   const score = m.hs != null && m.as != null ? `${m.hs} : ${m.as}` : 'vs';
   const pen = m.ph != null && m.pa != null && m.hs === m.as ? `<div class="mut">Penalties ${m.ph} – ${m.pa}</div>` : '';
   return `<div class="ko" style="${big ? 'font-size:1.15rem;padding:14px' : ''};cursor:pointer" onclick="openMatch('${m.key}')">
-    <div class="mut">${esc(m.stage)} · ${dayLabel(m)}${fmtWhen(m.when)} ${live}</div>
+    <div class="mut"><span class="badge mno">#${m.no}</span> ${esc(m.stage)} · ${dayLabel(m)}${fmtWhen(m.when)} ${live}</div>
     <div class="row"><b style="flex:1">${esc(m.ready ? tname(m.home) : 'TBD')}</b><b style="font-size:1.2em">${score}</b><b style="flex:1;text-align:right">${esc(m.ready ? tname(m.away) : 'TBD')}</b></div>${pen}${goalLine(m.key)}</div>`;
 }
 function renderHome(){
@@ -737,8 +905,8 @@ function renderHome(){
   const champ = S.ko ? koRounds().at(-1)[0].winner : undefined;
   const tables = S.groups.map(g => {
     const st = standings(g);
-    return `<div class="card"><h3>Group ${g}</h3><table><tr><th>#</th><th>Team</th><th>P</th><th>GD</th><th>Pts</th></tr>
-      ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.GF-r.GA}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table></div>`;
+    return `<div class="card"><h3>Group ${g}</h3><table><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+      ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table></div>`;
   }).join('');
   const played = done.length, total = ms.length;
   $('homeView').innerHTML = `
@@ -756,10 +924,141 @@ function renderHome(){
 }
 setInterval(() => { if (!$('tab-home').classList.contains('hidden') && document.activeElement?.tagName !== 'INPUT') { try { renderHome(); } catch(e){} } }, 15000);
 
+function toggleMenu(force){
+  const open = force === undefined ? !$('sideNav').classList.contains('open') : force;
+  $('sideNav').classList.toggle('open', open); $('overlay').classList.toggle('show', open);
+}
+// overall match number = order of play across the whole tournament
+function matchNo(key){ try { const i = allMatches().findIndex(x => x.key === key); return i >= 0 ? i + 1 : ''; } catch(e){ return ''; } }
+
+const toLocalInput = d => new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+function setSched(key, f, v){
+  S.schedOv = S.schedOv || {}; const o = S.schedOv[key] = S.schedOv[key] || {}; o[f] = v;
+  document.activeElement && document.activeElement.blur && document.activeElement.blur(); save(); render();
+}
+function resetSched(){ if (!confirm('Reset all match times and venues to the automatic schedule?')) return; S.schedOv = {}; save(); render(); }
+function renderFixtures(){
+  const el = $('fixturesView');
+  if (document.activeElement && el.contains(document.activeElement)) return;
+  $('fxNote').innerHTML = isAdmin ? 'Full match schedule in order of play. As organizer you can change any kick-off date/time and venue; the list re-orders and match numbers update automatically. <button class="sec mini" onclick="resetSched()">Reset to automatic schedule</button>' : 'Full match schedule in order of play. Tap a match for details.';
+  if (!S.groups.length){ el.innerHTML = '<div class="card mut">No fixtures yet.</div>'; return; }
+  let last = null, html = '';
+  allMatches().forEach(m => {
+    const dk = m.when.toDateString();
+    if (dk !== last){ if (last) html += '</div>'; html += `<div class="card"><h3 class="dayh">${m.when.toLocaleDateString(undefined, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}</h3>`; last = dk; }
+    const sched = isAdmin
+      ? `<input type="datetime-local" value="${toLocalInput(m.when)}" onchange="setSched('${m.key}','when',this.value)"> <input placeholder="Venue / pitch" value="${esc(m.venue)}" onchange="setSched('${m.key}','venue',this.value)" style="width:150px">`
+      : `<b>🕒 ${m.when.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</b>${m.venue ? ' · 📍 ' + esc(m.venue) : ''}`;
+    const pen = m.ph != null && m.pa != null && m.hs === m.as ? ` <span class="mut">(pens ${m.ph}–${m.pa})</span>` : '';
+    const score = `<b class="fxscore">${m.hs ?? '–'} : ${m.as ?? '–'}</b>${pen}`;
+    html += `<div class="fx"><div class="fxmeta"><span class="badge mno">#${m.no}</span> <span class="badge">${esc(m.stage)}</span> ${m.live ? '<span class="badge admin">LIVE</span>' : ''} ${sched}</div>
+      <div class="match"><span class="t r">${esc(m.ready ? tname(m.home) : 'TBD')}</span>${score}<span class="t">${esc(m.ready ? tname(m.away) : 'TBD')}</span>
+      <button class="sec mini" onclick="openMatch('${m.key}')">Details</button></div>${goalLine(m.key)}</div>`;
+  });
+  el.innerHTML = html + '</div>';
+}
+
+/* ---------- knockout pairing: paired groups (A-B, C-D, ...) ----------
+   QF1 A1 v B2, QF2 B1 v A2, QF3 C1 v D2, QF4 D1 v C2 ; SF1 = QF1 v QF3, SF2 = QF2 v QF4 */
+function koPlan(byGroup){ // byGroup[g] = [1st, 2nd]
+  const G = byGroup.length;
+  if (S.qualifiers !== 2 || G < 2 || G % 2 || (G & (G - 1))) return null;
+  const nat = [];
+  for (let k = 0; k < G; k += 2){
+    const X = byGroup[k], Y = byGroup[k + 1];
+    nat.push({home: X[0], away: Y[1]}, {home: Y[0], away: X[1]});
+  }
+  if (nat.length === 1) return {first: nat, labels: [1]};
+  const order = [...nat.keys()].filter(i => i % 2 === 0).concat([...nat.keys()].filter(i => i % 2 === 1));
+  return {first: order.map(i => nat[i]), labels: order.map(i => i + 1)};
+}
+
+/* ---------- organizer override of group positions (ties / toss) ---------- */
+function finalOrder(g){
+  const st = standings(g), ov = (S.qualOv || {})[g];
+  if (!ov || !ov.length) return st;
+  const picked = ov.map(id => st.find(r => r.id === id)).filter(Boolean);
+  return picked.concat(st.filter(r => !ov.includes(r.id)));
+}
+function renderOverride(){
+  const el = $('ovView'); if (!el || !isAdmin) return;
+  const ae = document.activeElement;
+  if (ae && el.contains(ae) && (ae.tagName === 'INPUT' || ae.tagName === 'SELECT')) return;
+  if (!S.groups.length){ el.innerHTML = ''; el.classList.add('ovClosed'); return; }
+  const open = el.dataset.open === '1';
+  el.classList.toggle('ovClosed', !open);
+  const anyOv = Object.values(S.qualOv || {}).some(v => v && v.length);
+  el.innerHTML = !open
+    ? `<button class="sec" onclick="toggleOv(true)">⚖️ Override qualifiers</button>${anyOv ? ' <span class="badge admin">Override active</span>' : ''}`
+    : `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <b>⚖️ Qualifier override</b>${anyOv ? '<span class="badge admin">Override active</span>' : ''}
+      <span class="mut" style="flex:1">Use when teams are tied and the places are decided by toss or a ruling.</span>
+      <button class="sec" onclick="toggleOv(false)">✕ Close</button></div>` +
+    (!open ? '' : `<div class="grid" style="margin-top:12px">${S.groups.map(g => {
+      const st = standings(g), cur = finalOrder(g), teams = S.teams.filter(t => t.group === g), ov = (S.qualOv || {})[g];
+      return `<div class="card" style="margin:0"><h3>Group ${g} ${ov && ov.length ? '<span class="badge admin">Overridden</span>' : ''}</h3>
+        <p class="mut">By standings: ${st.slice(0, S.qualifiers).map((r, i) => `${posLabel(i)}: ${esc(tname(r.id))} (${r.Pts} pts)`).join(' · ')}</p>
+        ${Array.from({length: S.qualifiers}, (_, i) => `<p>${posLabel(i)} <select class="ovSel" data-g="${g}" data-i="${i}">${teams.map(t =>
+          `<option value="${t.id}" ${cur[i] && cur[i].id === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></p>`).join('')}
+        <input class="ovNote" data-g="${g}" placeholder="Reason, e.g. decided by toss" value="${esc(((S.qualNote || {})[g]) || '')}" style="width:100%">
+        <p><button class="sec mini" onclick="clearOv('${g}')">Use standings</button></p></div>`;
+    }).join('')}</div>
+    <p><button onclick="saveOv()">Save override</button> <span class="mut">If the bracket is already generated, you'll be asked to regenerate it (knockout scores are cleared).</span></p>`);
+}
+function toggleOv(o){ $('ovView').dataset.open = o ? '1' : '0'; document.activeElement && document.activeElement.blur(); renderOverride(); }
+function saveOv(){
+  S.qualOv = S.qualOv || {}; S.qualNote = S.qualNote || {};
+  for (const g of S.groups){
+    const ids = [...document.querySelectorAll(`.ovSel[data-g="${g}"]`)].map(s => +s.value);
+    if (new Set(ids).size !== ids.length) return alert(`Group ${g}: the same team is picked twice.`);
+    const def = standings(g).slice(0, S.qualifiers).map(r => r.id);
+    S.qualOv[g] = ids.join() === def.join() ? [] : ids;
+    S.qualNote[g] = (document.querySelector(`.ovNote[data-g="${g}"]`) || {}).value || '';
+  }
+  $('ovView').dataset.open = '0'; save();
+  if (S.ko && confirm('Regenerate the knockout bracket with these positions now? Knockout scores will be cleared.')) $('genKO').onclick();
+  render();
+}
+function clearOv(g){ if (S.qualOv) S.qualOv[g] = []; if (S.qualNote) S.qualNote[g] = ''; save(); renderOverride(); }
+
+/* ---------- knockout skeleton (before bracket is generated) ---------- */
+const posLabel = i => ['Champion', 'Runner-up', '3rd place', '4th place'][i] || (i + 1) + 'th place';
+const shortRound = n => n === 2 ? 'Final' : n === 4 ? 'SF' : n === 8 ? 'QF' : 'R' + n;
+function koSkeleton(){
+  if (!S.groups.length) return '<span class="mut">Set up the groups first to see the knockout path.</span>';
+  const seeds = [];
+  for (let pos = 0; pos < S.qualifiers; pos++) S.groups.forEach(g => {
+    if (S.teams.filter(t => t.group === g).length > pos) seeds.push(`Group ${g} ${posLabel(pos)}`);
+  });
+  if (seeds.length < 2) return '<span class="mut">Need at least 2 qualifying teams.</span>';
+  let size = 2; while (size < seeds.length) size *= 2;
+  const first = [];
+  for (let i = 0; i < size / 2; i++) first.push([seeds[i] ?? null, seeds[size - 1 - i] ?? null]);
+  const plan = koPlan(S.groups.map(g => [`Group ${g} 1st`, `Group ${g} 2nd`]));
+  let cur = plan ? plan.first.map(m => [m.home, m.away]) : bracketOrder(size / 2).map(i => first[i]), html = '';
+  let lab = plan ? plan.labels : cur.map((_, i) => i + 1);
+  if (plan) size = cur.length * 2;
+  let teams = size;
+  while (cur.length){
+    const rn = shortRound(teams);
+    html += `<div class="round"><h3>${roundName(teams)}</h3>${cur.map((m, i) => `<div class="ko skel">
+      <div class="mut">${rn}${cur.length > 1 ? ' ' + lab[i] : ''}</div>
+      <div class="row"><span>${esc(m[0] ?? 'Bye')}</span></div><div class="row"><span>${esc(m[1] ?? 'Bye')}</span></div></div>`).join('')}</div>`;
+    if (cur.length === 1) break;
+    const next = [];
+    for (let i = 0; i < cur.length; i += 2){
+      const w = j => cur[j][1] === null ? cur[j][0] : cur[j][0] === null ? cur[j][1] : `Winner ${rn} ${lab[j]}`;
+      next.push([w(i), w(i + 1)]);
+    }
+    cur = next; teams /= 2; lab = cur.map((_, i) => i + 1);
+  }
+  return `<div style="width:100%"><p class="mut">📋 Knockout path. Teams fill in automatically when the organizer generates the bracket after the group stage.</p><div class="bracket">${html}</div></div>`;
+}
+
 /* ---------- tabs & data ---------- */
-function showTab(t){ ['home','setup','groups','knockout','match','squads'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
-  document.querySelectorAll('nav [data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t)); }
-document.querySelectorAll('nav [data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showTab(t){ ['home','login','fixtures','setup','groups','knockout','match','squads'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
+  document.querySelectorAll('#sideNav [data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t)); window.scrollTo(0, 0); }
+document.querySelectorAll('#sideNav [data-tab]').forEach(b => b.onclick = () => { showTab(b.dataset.tab); toggleMenu(false); });
 $('exportBtn').onclick = () => { const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], {type: 'application/json'})); a.download = 'data.json'; a.click(); };
 $('importFile').onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { S = JSON.parse(t); save(); render(); }); };
