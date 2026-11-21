@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Tournament</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--mut:#94a3b8;--acc:#22c55e;--warn:#f59e0b;--err:#ef4444}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+  header{padding:16px 20px;background:#020617;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+  header h1{margin:0;font-size:1.3rem}
+  nav button{margin-right:6px}
+  main{max-width:1100px;margin:auto;padding:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+  button{background:var(--acc);color:#04130a;border:0;border-radius:6px;padding:8px 14px;font-weight:600;cursor:pointer}
+  button.sec{background:var(--line);color:var(--txt)}
+  button.danger{background:var(--err);color:#fff}
+  button.active{outline:2px solid #fff}
+  input,select{background:#0b1222;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:7px}
+  input.score{width:48px;text-align:center}
+  input.pen{width:40px;text-align:center;font-size:.8rem}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  tr.q td{background:rgba(34,197,94,.12)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .match{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .match .t{flex:1}.match .t.r{text-align:right}
+  .badge{font-size:.75rem;padding:2px 8px;border-radius:99px;background:var(--line);color:var(--mut)}
+  .badge.admin{background:var(--warn);color:#000}
+  .bracket{display:flex;gap:18px;overflow-x:auto;padding-bottom:8px}
+  .round{min-width:230px;display:flex;flex-direction:column;justify-content:space-around;gap:10px}
+  .round h3{text-align:center;margin:0 0 6px;font-size:1rem;color:var(--acc)}
+  .ko{background:#0b1222;border:1px solid var(--line);border-radius:8px;padding:8px}
+  .ko .row{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 0}
+  .ko .w{font-weight:700;color:var(--acc)}
+  .mut{color:var(--mut);font-size:.85rem}
+  .hidden{display:none}
+  .teamrow{display:flex;gap:8px;margin-bottom:6px}
+  .teamrow input{flex:1}
+  .champ{font-size:1.4rem;text-align:center;padding:14px;color:var(--warn)}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<header>
+  <h1 id="title">⚽ Football Tournament</h1>
+  <nav>
+    <button class="sec" data-tab="groups">Groups & Fixtures</button>
+    <button class="sec" data-tab="knockout">Knockout</button>
+    <button class="sec admin-only" data-tab="setup">Setup</button>
+    <span id="modeBadge" class="badge">Viewer</span>
+    <button class="sec" id="loginBtn">Admin login</button>
+  </nav>
+</header>
+<div id="status" class="mut" style="padding:6px 20px;background:#020617"></div>
+
+<main>
+  <!-- SETUP -->
+  <section id="tab-setup" class="hidden">
+    <div class="card">
+      <h2>1. Tournament details</h2>
+      <p><label>Name <input id="tName" value="My Cup 2026"></label></p>
+      <p>
+        <label>Number of teams <input id="nTeams" type="number" min="2" max="64" value="8" style="width:80px"></label>
+        <label>Number of groups <input id="nGroups" type="number" min="1" max="16" value="2" style="width:80px"></label>
+        <label>Teams qualifying per group <input id="nQual" type="number" min="1" max="8" value="2" style="width:80px"></label>
+        <button class="sec" id="buildRows">Create team list</button>
+      </p>
+    </div>
+    <div class="card">
+      <h2>2. Teams & groups</h2>
+      <div id="teamRows" class="mut">Click "Create team list" first.</div>
+      <p><button class="sec" id="autoAssign">Auto-assign groups randomly</button>
+         <button id="genFixtures">Generate fixtures</button></p>
+    </div>
+    <div class="card">
+      <h2>3. Publish / backup</h2>
+      <p class="mut">Data is saved online automatically. Use Export to keep a backup file, Import to restore one.</p>
+      <button class="sec" id="exportBtn">Export data.json</button>
+      <label class="sec" style="cursor:pointer"><input type="file" id="importFile" accept=".json" class="hidden"><span class="badge">Import JSON</span></label>
+      <button class="sec" id="changePw">Send password reset email</button>
+      <button class="danger" id="resetBtn">Reset tournament</button>
+    </div>
+  </section>
+
+  <!-- GROUPS -->
+  <section id="tab-groups">
+    <div id="groupsView"></div>
+    <div class="card admin-only"><button id="genKO">Generate knockout bracket from standings</button>
+      <span class="mut">Top teams per group advance. Re-generating clears knockout scores.</span></div>
+  </section>
+
+  <!-- KNOCKOUT -->
+  <section id="tab-knockout" class="hidden">
+    <div class="card"><div id="koView" class="bracket"><span class="mut">Knockout bracket not generated yet.</span></div>
+    <div id="champ"></div>
+    <p class="mut">If a knockout match is level, the admin enters penalty scores (small boxes) to decide the winner.</p></div>
+  </section>
+</main>
+
+<script>
+/* =====================================================================
+   STEP 1: PASTE YOUR FIREBASE CONFIG HERE (see setup guide)
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyD9vpCPem7J9Ssn8IzaDDbxNIZ_a00eDCM",
+  authDomain: "kpfm-football.firebaseapp.com",
+  projectId: "kpfm-football",
+  appId: "1:892784450155:web:6f3e5e55b9dedb5f866f2e"
+};
+const DOC_PATH = 'tournaments/main';
+const LS_KEY = 'football_tournament_v1';
+let isAdmin = false, online = false, db = null, auth = null;
+let S = blank();
+
+function blank(){ return {name:'My Cup 2026', qualifiers:2, groups:[], teams:[], matches:[], ko:null}; }
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const team = id => S.teams.find(t => t.id === id);
+const tname = id => id == null ? 'BYE' : (team(id)?.name ?? 'TBD');
+const status = (msg) => { $('status').textContent = msg; };
+const safeRender = () => { try { render(); } catch(e){ console.warn(e); } };
+
+function save(){
+  const clean = JSON.parse(JSON.stringify(S));          // strips undefined values
+  if (online && isAdmin) db.doc(DOC_PATH).set(clean).catch(e => alert('Save failed: ' + e.message));
+  if (!online) { try { localStorage.setItem(LS_KEY, JSON.stringify(clean)); } catch(e){} }
+}
+
+/* ---------- load: live sync from Firebase (fallback: this browser only) ---------- */
+async function load(){
+  try {
+    if (window.firebase && !firebaseConfig.apiKey.startsWith('PASTE')){
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore(); auth = firebase.auth(); online = true;
+      auth.onAuthStateChanged(u => { isAdmin = !!u; safeRender(); });
+      db.doc(DOC_PATH).onSnapshot(snap => {
+        S = snap.exists ? Object.assign(blank(), snap.data()) : blank();
+        safeRender();
+      }, err => status('🔴 Database error: ' + err.message));
+      status('🟢 Live – results are synced online for everyone');
+    } else {
+      const local = (() => { try { return localStorage.getItem(LS_KEY); } catch(e){ return null; } })();
+      if (local) S = JSON.parse(local);
+      status('⚠️ Offline demo mode – Firebase not configured yet, data stays in this browser only (demo admin password: admin123)');
+    }
+  } catch(e){ status('🔴 Could not connect: ' + e.message); }
+  safeRender();
+}
+
+/* ---------- admin ---------- */
+$('loginBtn').onclick = async () => {
+  if (isAdmin){ if (online) await auth.signOut(); isAdmin = false; return safeRender(); }
+  if (!online){
+    const p = prompt('Demo admin password (offline mode):');
+    if (p === 'admin123'){ isAdmin = true; safeRender(); } else if (p != null) alert('Wrong password');
+    return;
+  }
+  const email = prompt('Admin email:'); if (!email) return;
+  const pw = prompt('Password:'); if (!pw) return;
+  try { await auth.signInWithEmailAndPassword(email.trim(), pw); }
+  catch(e){ alert('Login failed: ' + e.message); }
+};
+$('changePw').onclick = async () => {
+  if (!online) return alert('Available once Firebase is configured.');
+  try { await auth.sendPasswordResetEmail(auth.currentUser.email); alert('Password reset email sent to ' + auth.currentUser.email); }
+  catch(e){ alert(e.message); }
+};
+
+/* ---------- setup ---------- */
+$('buildRows').onclick = () => {
+  const n = +$('nTeams').value, g = +$('nGroups').value;
+  if (n < 2 || g < 1 || g > n) return alert('Check team/group numbers.');
+  const letters = Array.from({length:g}, (_, i) => String.fromCharCode(65 + i));
+  let html = '';
+  for (let i = 0; i < n; i++){
+    const prev = S.teams[i];
+    html += `<div class="teamrow"><input class="tn" value="${esc(prev?.name || 'Team ' + (i+1))}">
+      <select class="tg">${letters.map(l => `<option ${ (prev?.group || letters[i % g]) === l ? 'selected':''}>${l}</option>`).join('')}</select></div>`;
+  }
+  $('teamRows').innerHTML = html; $('teamRows').classList.remove('mut');
+};
+$('autoAssign').onclick = () => {
+  const sels = [...document.querySelectorAll('.tg')]; if (!sels.length) return;
+  const g = sels[0].options.length, idx = sels.map((_, i) => i).sort(() => Math.random() - .5);
+  idx.forEach((rowIdx, k) => sels[rowIdx].selectedIndex = k % g);
+};
+$('genFixtures').onclick = () => {
+  const names = [...document.querySelectorAll('.tn')].map(i => i.value.trim());
+  const grps = [...document.querySelectorAll('.tg')].map(s => s.value);
+  if (!names.length) return alert('Create the team list first.');
+  if (names.some(n => !n)) return alert('Every team needs a name.');
+  if (new Set(names).size !== names.length) return alert('Team names must be unique.');
+  if (S.matches.some(m => m.hs !== null) && !confirm('This will erase all entered scores. Continue?')) return;
+  S.name = $('tName').value || 'Tournament';
+  S.qualifiers = Math.max(1, +$('nQual').value);
+  S.teams = names.map((n, i) => ({id: i + 1, name: n, group: grps[i]}));
+  S.groups = [...new Set(grps)].sort();
+  for (const g of S.groups){
+    const c = S.teams.filter(t => t.group === g).length;
+    if (c < 2) return alert(`Group ${g} needs at least 2 teams.`);
+    if (S.qualifiers > c) return alert(`Group ${g} has fewer teams than the qualifiers per group.`);
+  }
+  S.matches = []; S.ko = null; let mid = 1;
+  for (const g of S.groups){
+    const ids = S.teams.filter(t => t.group === g).map(t => t.id);
+    roundRobin(ids).forEach((rnd, r) => rnd.forEach(([h, a]) => S.matches.push({id: mid++, group: g, md: r + 1, home: h, away: a, hs: null, as: null})));
+  }
+  save(); render(); showTab('groups');
+};
+// circle method round-robin
+function roundRobin(ids){
+  const t = [...ids]; if (t.length % 2) t.push(null);
+  const n = t.length, rounds = [];
+  for (let r = 0; r < n - 1; r++){
+    const rnd = [];
+    for (let i = 0; i < n / 2; i++){
+      const h = t[i], a = t[n - 1 - i];
+      if (h != null && a != null) rnd.push(r % 2 ? [a, h] : [h, a]);
+    }
+    rounds.push(rnd); t.splice(1, 0, t.pop());
+  }
+  return rounds;
+}
+
+/* ---------- standings ---------- */
+function standings(g){
+  const rows = {};
+  S.teams.filter(t => t.group === g).forEach(t => rows[t.id] = {id: t.id, P:0, W:0, D:0, L:0, GF:0, GA:0, Pts:0});
+  S.matches.filter(m => m.group === g && m.hs !== null && m.as !== null).forEach(m => {
+    const h = rows[m.home], a = rows[m.away];
+    h.P++; a.P++; h.GF += m.hs; h.GA += m.as; a.GF += m.as; a.GA += m.hs;
+    if (m.hs > m.as){ h.W++; a.L++; h.Pts += 3; } else if (m.hs < m.as){ a.W++; h.L++; a.Pts += 3; } else { h.D++; a.D++; h.Pts++; a.Pts++; }
+  });
+  return Object.values(rows).sort((x, y) => y.Pts - x.Pts || (y.GF-y.GA) - (x.GF-x.GA) || y.GF - x.GF || tname(x.id).localeCompare(tname(y.id)));
+}
+
+/* ---------- knockout ---------- */
+$('genKO').onclick = () => {
+  if (!S.matches.length) return alert('Generate fixtures first.');
+  const pending = S.matches.filter(m => m.hs === null || m.as === null).length;
+  if (pending && !confirm(`${pending} group match(es) have no score yet. Generate anyway?`)) return;
+  // seeds: all group winners, then all runners-up, ...
+  const tables = S.groups.map(g => standings(g)), seeds = [];
+  for (let pos = 0; pos < S.qualifiers; pos++) tables.forEach(t => t[pos] && seeds.push(t[pos].id));
+  if (seeds.length < 2) return alert('Need at least 2 qualified teams.');
+  let size = 2; while (size < seeds.length) size *= 2;
+  const first = [];
+  for (let i = 0; i < size / 2; i++) first.push({home: seeds[i] ?? null, away: seeds[size - 1 - i] ?? null});
+  // order the first round so top seeds land in opposite halves
+  S.ko = {size, first: bracketOrder(size / 2).map(i => first[i]), results: {}};
+  save(); render(); showTab('knockout');
+};
+function bracketOrder(n){ let o = [0]; while (o.length < n){ const m = o.length * 2; o = o.flatMap(x => [x, m - 1 - x]); } return o; }
+const roundName = teams => teams === 2 ? 'Final' : teams === 4 ? 'Semi-finals' : teams === 8 ? 'Quarter-finals' : `Round of ${teams}`;
+function koRounds(){
+  const rounds = []; let cur = S.ko.first.map(m => ({...m}));
+  for (let r = 0; cur.length; r++){
+    cur.forEach((m, i) => { const res = S.ko.results[`${r}-${i}`] || {}; Object.assign(m, {r, i, ...res}); m.winner = winner(m); });
+    rounds.push(cur);
+    if (cur.length === 1) break;
+    const next = [];
+    for (let i = 0; i < cur.length; i += 2) next.push({home: cur[i].winner ?? undefined, away: cur[i+1].winner ?? undefined});
+    cur = next;
+  }
+  return rounds;
+}
+function winner(m){
+  if (m.home === undefined || m.away === undefined) return undefined; // waiting for previous round
+  if (m.home === null) return m.away; if (m.away === null) return m.home; // bye
+  if (m.hs == null || m.as == null) return undefined;
+  if (m.hs !== m.as) return m.hs > m.as ? m.home : m.away;
+  if (m.ph == null || m.pa == null || m.ph === m.pa) return undefined;
+  return m.ph > m.pa ? m.home : m.away;
+}
+function setKO(r, i, field, val){
+  const k = `${r}-${i}`; S.ko.results[k] = S.ko.results[k] || {};
+  S.ko.results[k][field] = val === '' ? null : Math.max(0, parseInt(val));
+  // clear later results that may now be invalid
+  Object.keys(S.ko.results).forEach(key => { if (+key.split('-')[0] > r && !stillValid(key)) delete S.ko.results[key]; });
+  save(); render();
+}
+function stillValid(){ return true; } // keep later scores; team names update automatically
+
+/* ---------- render ---------- */
+function render(){
+  $('title').textContent = '⚽ ' + (S.name || 'Football Tournament');
+  $('modeBadge').textContent = isAdmin ? 'Admin' : 'Viewer';
+  $('modeBadge').className = 'badge' + (isAdmin ? ' admin' : '');
+  $('loginBtn').textContent = isAdmin ? 'Log out' : 'Admin login';
+  document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !isAdmin));
+  if (!isAdmin && !$('tab-setup').classList.contains('hidden')) showTab('groups');
+  $('tName').value = S.name; $('nQual').value = S.qualifiers;
+  if (S.teams.length && !document.querySelector('.tn')){ $('nTeams').value = S.teams.length; $('nGroups').value = S.groups.length; $('buildRows').onclick(); }
+
+  // groups
+  if (!S.groups.length){ $('groupsView').innerHTML = `<div class="card mut">No tournament set up yet. ${isAdmin ? 'Go to Setup.' : 'An admin needs to log in and create one.'}</div>`; }
+  else $('groupsView').innerHTML = `<div class="grid">${S.groups.map(g => {
+    const st = standings(g);
+    const tbl = `<table><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>
+      ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td>${r.GF-r.GA}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table>`;
+    const ms = S.matches.filter(m => m.group === g).map(m => `<div class="match"><span class="badge">MD${m.md}</span>
+      <span class="t r">${esc(tname(m.home))}</span>${scoreCell(`gm(${m.id},'hs',this.value)`, m.hs)} : ${scoreCell(`gm(${m.id},'as',this.value)`, m.as)}<span class="t">${esc(tname(m.away))}</span></div>`).join('');
+    return `<div class="card"><h2>Group ${g}</h2>${tbl}<h3 style="margin-top:14px">Fixtures</h3>${ms}</div>`;
+  }).join('')}</div>`;
+
+  // knockout
+  if (!S.ko){ $('koView').innerHTML = '<span class="mut">Knockout bracket not generated yet.</span>'; $('champ').innerHTML = ''; return; }
+  const rounds = koRounds();
+  $('koView').innerHTML = rounds.map(rnd => `<div class="round"><h3>${roundName(rnd.length * 2)}</h3>${rnd.map(m => {
+    const ready = m.home !== undefined && m.away !== undefined && m.home !== null && m.away !== null;
+    const tied = ready && m.hs != null && m.hs === m.as;
+    const line = (id, sf, pf) => `<div class="row"><span class="${m.winner === id && id != null ? 'w' : ''}">${esc(id === undefined ? 'TBD' : tname(id))}</span>
+      <span>${ready ? scoreCell(`setKO(${m.r},${m.i},'${sf}',this.value)`, m[sf]) : ''}${tied ? ' ' + scoreCell(`setKO(${m.r},${m.i},'${pf}',this.value)`, m[pf], 'pen') : ''}</span></div>`;
+    return `<div class="ko">${line(m.home, 'hs', 'ph')}${line(m.away, 'as', 'pa')}${tied ? '<div class="mut">Penalties</div>' : ''}</div>`;
+  }).join('')}</div>`).join('');
+  const champ = rounds.at(-1)[0].winner;
+  $('champ').innerHTML = champ != null ? `<div class="champ">🏆 Champion: <b>${esc(tname(champ))}</b></div>` : '';
+}
+function scoreCell(handler, v, cls = 'score'){
+  return isAdmin ? `<input class="${cls}" type="number" min="0" value="${v ?? ''}" onchange="${handler}">` : `<b>${v ?? '–'}</b>`;
+}
+function gm(id, field, val){ const m = S.matches.find(x => x.id === id); m[field] = val === '' ? null : Math.max(0, parseInt(val)); save(); render(); }
+
+/* ---------- tabs & data ---------- */
+function showTab(t){ ['setup','groups','knockout'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
+  document.querySelectorAll('nav [data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t)); }
+document.querySelectorAll('nav [data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+$('exportBtn').onclick = () => { const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], {type: 'application/json'})); a.download = 'data.json'; a.click(); };
+$('importFile').onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { S = JSON.parse(t); save(); render(); }); };
+$('resetBtn').onclick = () => { if (confirm('Delete everything?')){ S = blank(); save(); $('teamRows').innerHTML = ''; render(); } };
+
+window.addEventListener('unhandledrejection', e => e.preventDefault());
+showTab('groups'); load().catch(() => {});
+</script>
+</body>
+</html>
