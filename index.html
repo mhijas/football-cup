@@ -53,6 +53,7 @@
 <header>
   <h1 id="title">⚽ Football Tournament</h1>
   <nav>
+    <button class="sec" data-tab="home">Home</button>
     <button class="sec" data-tab="groups">Groups & Fixtures</button>
     <button class="sec" data-tab="knockout">Knockout</button>
     <button class="sec" data-tab="squads">Squads</button>
@@ -75,6 +76,14 @@
         <label>Teams qualifying per group <input id="nQual" type="number" min="1" max="8" value="2" style="width:80px"></label>
         <button class="sec" id="buildRows">Create team list</button>
       </p>
+      <h3>Schedule</h3>
+      <p>
+        <label>Tournament format <select id="sDays"><option value="1">One-day tournament</option><option value="2">2 days</option><option value="3">3 days</option><option value="4">4 days</option><option value="5">5 days</option><option value="6">6 days</option><option value="7">7 days</option></select></label>
+        <label>Start date <input id="sDate" type="date"></label>
+        <label>First kick-off <input id="sTime" type="time" value="09:00"></label>
+        <label>Minutes per match slot <input id="sSlot" type="number" min="5" max="180" value="30" style="width:70px"></label>
+      </p>
+      <p class="mut">Group matches are spread evenly over the days in fixture order; knockout matches are played on the last day after the group games. The slot includes the break between matches.</p>
     </div>
     <div class="card">
       <h2>2. Teams & groups</h2>
@@ -91,6 +100,9 @@
       <button class="danger" id="resetBtn">Reset tournament</button>
     </div>
   </section>
+
+  <!-- HOME -->
+  <section id="tab-home" class="hidden"><div id="homeView"></div></section>
 
   <!-- GROUPS -->
   <section id="tab-groups">
@@ -212,6 +224,7 @@ $('genFixtures').onclick = () => {
   if (S.matches.some(m => m.hs !== null) && !confirm('This will erase all entered scores. Continue?')) return;
   S.name = $('tName').value || 'Tournament';
   S.qualifiers = Math.max(1, +$('nQual').value);
+  S.sched = {days: +$('sDays').value || 1, date: $('sDate').value || new Date().toISOString().slice(0, 10), time: $('sTime').value || '09:00', slot: Math.max(5, +$('sSlot').value || 30)};
   S.teams = names.map((n, i) => ({id: i + 1, name: n, group: grps[i]}));
   S.groups = [...new Set(grps)].sort();
   for (const g of S.groups){
@@ -309,14 +322,15 @@ function stillValid(){ return true; } // keep later scores; team names update au
 /* ---------- render ---------- */
 function render(){
   S.goals = S.goals || {}; S.cards = S.cards || {}; S.squads = S.squads || {}; S.fouls = S.fouls || {}; S.clocks = S.clocks || {};
-  try { renderScorers(); renderCards(); renderSuspensions(); renderSquads(); if (currentMatch && !$('tab-match').classList.contains('hidden')) renderMatch(); } catch(e){ console.warn(e); }
+  try { renderScorers(); renderCards(); renderSuspensions(); renderSquads(); renderHome(); if (currentMatch && !$('tab-match').classList.contains('hidden')) renderMatch(); } catch(e){ console.warn(e); }
   $('title').textContent = '⚽ ' + (S.name || 'Football Tournament');
   $('modeBadge').textContent = isAdmin ? 'Admin' : 'Viewer';
   $('modeBadge').className = 'badge' + (isAdmin ? ' admin' : '');
   $('loginBtn').textContent = isAdmin ? 'Log out' : 'Admin login';
   document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !isAdmin));
-  if (!isAdmin && !$('tab-setup').classList.contains('hidden')) showTab('groups');
+  if (!isAdmin && !$('tab-setup').classList.contains('hidden')) showTab('home');
   $('tName').value = S.name; $('nQual').value = S.qualifiers;
+  if (S.sched && document.activeElement?.closest?.('#tab-setup') == null){ $('sDays').value = S.sched.days; $('sDate').value = S.sched.date; $('sTime').value = S.sched.time; $('sSlot').value = S.sched.slot; }
   if (S.teams.length && !document.querySelector('.tn')){ $('nTeams').value = S.teams.length; $('nGroups').value = S.groups.length; $('buildRows').onclick(); }
 
   // groups
@@ -325,7 +339,8 @@ function render(){
     const st = standings(g);
     const tbl = `<table><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>
       ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td>${r.GF-r.GA}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table>`;
-    const ms = S.matches.filter(m => m.group === g).map(m => `<div class="match"><span class="badge">M${m.md}</span>
+    const sch = {}; try { allMatches().forEach(x => sch[x.key] = x); } catch(e){}
+    const ms = S.matches.filter(m => m.group === g).map(m => `<div class="mut" style="margin-top:6px">${sch['g'+m.id] ? dayLabel(sch['g'+m.id]) + fmtWhen(sch['g'+m.id].when) : ''}</div><div class="match"><span class="badge">M${m.md}</span>
       <span class="t r">${esc(tname(m.home))}</span>${scoreCell(`gm(${m.id},'hs',this.value)`, m.hs)} : ${scoreCell(`gm(${m.id},'as',this.value)`, m.as)}<span class="t">${esc(tname(m.away))}</span><button class="sec mini" onclick="openMatch('g${m.id}')">Details</button></div>${goalLine('g'+m.id)}`).join('');
     return `<div class="card"><h2>Group ${g}</h2>${tbl}<h3 style="margin-top:14px">Fixtures</h3>${ms}</div>`;
   }).join('')}</div>`;
@@ -349,7 +364,7 @@ function scoreCell(handler, v, cls = 'score'){
 function gm(id, field, val){ const m = S.matches.find(x => x.id === id); m[field] = val === '' ? null : Math.max(0, parseInt(val)); save(); render(); }
 
 /* ---------- match page & goals ---------- */
-let currentMatch = null, prevTab = 'groups';
+let currentMatch = null, prevTab = 'home';
 function getMatch(key){
   if (key[0] === 'g'){
     const m = S.matches.find(x => x.id === +key.slice(1)); if (!m) return null;
@@ -370,7 +385,7 @@ function goalLine(key){
   return `<div class="gl">${c.map(x => `<span>${cardIcon(x)} ${esc(x.player || 'TBC')} ${fmtMin(x)}</span>`).join('')}${g.map(x => `<span>⚽ ${esc(x.player || 'TBC')} ${fmtMin(x)}${x.type ? ' (' + x.type + ')' : ''} <i>${esc(tname(x.team))}</i></span>`).join('')}</div>`;
 }
 function openMatch(key){
-  const t = ['groups','knockout'].find(x => !$('tab-' + x).classList.contains('hidden'));
+  const t = ['home','groups','knockout'].find(x => !$('tab-' + x).classList.contains('hidden'));
   if (t) prevTab = t;
   currentMatch = key; renderMatch(); showTab('match');
 }
@@ -379,31 +394,33 @@ function syncScore(){
   m.set('hs', g.filter(x => x.team === m.home).length);
   m.set('as', g.filter(x => x.team === m.away).length);
 }
-const halfLen = () => S.halfLen || 45;
+const matchLen = () => S.matchLen || 40;
+// clock: {phase:'RUN'|'PAUSE'|'FT', acc: ms counted before last start, t: last start time}
+function elapsedMs(c){
+  if (!c || !c.phase) return 0;
+  return (c.acc || 0) + (c.phase === 'RUN' ? Date.now() - c.t : 0);
+}
 function clockNow(c){
   if (!c || !c.phase) return null;
-  if (c.phase === 'HT') return {min: halfLen(), plus: 0};
-  if (c.phase === 'FT') return c.end || {min: 2 * halfLen(), plus: 0};
-  const base = c.phase === '2H' ? halfLen() : 0;
-  const el = Math.floor((Date.now() - c.t) / 60000) + 1;
-  return el > halfLen() ? {min: base + halfLen(), plus: el - halfLen()} : {min: base + el, plus: 0};
+  if (c.phase === 'FT' && c.end) return c.end;
+  const el = Math.floor(elapsedMs(c) / 60000) + 1, L = matchLen();
+  return el > L ? {min: L, plus: el - L} : {min: el, plus: 0};
 }
 const fmtMin = e => e && e.min != null ? `${e.min}${e.plus ? '+' + e.plus : ''}'` : '';
 function clockLabel(c){
   if (!c || !c.phase) return 'Not started';
-  const n = clockNow(c), t = {'1H': '1st half', 'HT': 'Half time', '2H': '2nd half', 'FT': 'Full time'}[c.phase];
-  if (c.phase === '1H' || c.phase === '2H'){
-    const s = Math.floor((Date.now() - c.t) / 1000) % 60;
-    return `${t} · ${fmtMin(n)} <span class="mut">(${String(s).padStart(2,'0')}s)</span>`;
-  }
-  return t;
+  if (c.phase === 'FT') return 'Full time';
+  const ms = elapsedMs(c), mm = Math.floor(ms / 60000), ss = Math.floor(ms / 1000) % 60;
+  return `${c.phase === 'PAUSE' ? '⏸ Paused · ' : ''}${fmtMin(clockNow(c))} <span class="mut">(${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')})</span>`;
 }
-function setClock(phase){
+function setClock(action){
   S.clocks = S.clocks || {};
-  const c = S.clocks[currentMatch] || {};
-  if (phase === 'reset'){ if (!confirm('Reset the match clock?')) return; delete S.clocks[currentMatch]; }
-  else { if (phase === 'FT') c.end = clockNow(c); c.phase = phase; if (phase === '1H' || phase === '2H') c.t = Date.now(); S.clocks[currentMatch] = c; }
-  save(); renderMatch();
+  const c = S.clocks[currentMatch] || {phase: null, acc: 0};
+  if (action === 'start'){ if (c.phase === 'FT') c.end = null; c.phase = 'RUN'; c.t = Date.now(); }
+  else if (action === 'pause'){ if (c.phase !== 'RUN') return; c.acc = elapsedMs(c); c.phase = 'PAUSE'; }
+  else if (action === 'stop'){ if (!confirm('Stop the match (full time)?')) return; c.end = clockNow(c); c.acc = elapsedMs(c); c.phase = 'FT'; }
+  else if (action === 'reset'){ if (!confirm('Reset the match clock to 0?')) return; delete S.clocks[currentMatch]; save(); return renderMatch(); }
+  S.clocks[currentMatch] = c; save(); renderMatch();
 }
 setInterval(() => { const el = $('clock'); if (el && currentMatch) el.innerHTML = clockLabel((S.clocks || {})[currentMatch]); }, 1000);
 
@@ -447,12 +464,21 @@ function delEvent(kind, id){
   save(); render(); renderMatch();
 }
 function playerSelect(ev){
-  const sq = squadOf(ev.team), hd = `onchange="editEvent('${ev.kind}','${ev.id}','player',this.value)"`;
-  if (!sq.length) return `<input value="${esc(ev.player)}" placeholder="Enter name later" ${hd}>`;
-  const known = !ev.player || sq.includes(ev.player);
-  return `<select ${hd}><option value="">– name later –</option>${sq.map(n => `<option ${n === ev.player ? 'selected' : ''}>${esc(n)}</option>`).join('')}
-    ${known ? '' : `<option selected>${esc(ev.player)}</option>`}<option value="__other">Other (type)…</option></select>`;
+  const sq = squadOf(ev.team), lid = 'dl_' + ev.team;
+  return `<input list="${lid}" value="${esc(ev.player)}" placeholder="${sq.length ? 'Type number or name' : 'Enter name later'}"
+    onchange="editEvent('${ev.kind}','${ev.id}','player',resolvePlayer(${ev.team}, this.value))" style="width:170px">`;
 }
+// "10" -> "10 Ahmed" if the squad has exactly one entry starting with that number
+function resolvePlayer(team, v){
+  v = v.trim(); const sq = squadOf(team);
+  if (/^\d+$/.test(v)){
+    const hit = sq.filter(n => n.split(/\s+/)[0] === v);
+    if (hit.length === 1) return hit[0];
+  }
+  const exact = sq.find(n => n.toLowerCase() === v.toLowerCase());
+  return exact || v;
+}
+const squadLists = (...teams) => teams.map(t => `<datalist id="dl_${t}">${squadOf(t).map(n => `<option value="${esc(n)}">`).join('')}</datalist>`).join('');
 function renderMatch(){
   const m = getMatch(currentMatch);
   if (!m || m.home == null || m.away == null){ $('matchView').innerHTML = '<p class="mut">Match not available.</p>'; return; }
@@ -463,13 +489,12 @@ function renderMatch(){
   const susp = banned.length ? `<div class="card" style="border-color:var(--err)"><b>🚫 Suspended for this match:</b> ${banned.map(b => `${esc(b.player)} (${esc(tname(b.team))}, ${esc(b.reason)})`).join(', ')}</div>` : '';
   const pens = (m.ph != null && m.pa != null) ? `<p class="mut" style="text-align:center">Penalties: ${m.ph} – ${m.pa}</p>` : '';
   const clockBtns = !isAdmin ? '' : `<p style="text-align:center">
-    ${!ph ? `<button onclick="setClock('1H')">▶ Start match</button>` : ''}
-    ${ph === '1H' ? `<button class="sec" onclick="setClock('HT')">⏸ Half time</button>` : ''}
-    ${ph === 'HT' ? `<button onclick="setClock('2H')">▶ Start 2nd half</button>` : ''}
-    ${ph === '2H' ? `<button class="danger" onclick="setClock('FT')">⏹ Full time</button>` : ''}
-    ${ph ? `<button class="sec mini" onclick="setClock('reset')">Reset clock</button>` : ''}
-    <span class="mut" style="margin-left:10px">Half length <input type="number" min="1" max="60" value="${halfLen()}" style="width:60px"
-      onchange="S.halfLen = Math.max(1, +this.value || 45); this.blur(); save(); renderMatch();"> min</span></p>`;
+    ${ph !== 'RUN' ? `<button onclick="setClock('start')">▶ ${ph === 'PAUSE' ? 'Resume' : ph === 'FT' ? 'Restart' : 'Start'}</button>` : ''}
+    ${ph === 'RUN' ? `<button class="sec" onclick="setClock('pause')">⏸ Pause</button>` : ''}
+    ${ph === 'RUN' || ph === 'PAUSE' ? `<button class="danger" onclick="setClock('stop')">⏹ Stop</button>` : ''}
+    ${ph ? `<button class="sec mini" onclick="setClock('reset')">Reset</button>` : ''}
+    <span class="mut" style="margin-left:10px">Match length <input type="number" min="1" max="150" value="${matchLen()}" style="width:60px"
+      onchange="S.matchLen = Math.max(1, +this.value || 40); this.blur(); save(); renderMatch();"> min</span></p>`;
   const teamPad = id => `<div class="card" style="flex:1;min-width:260px"><h3>${esc(tname(id))}</h3>
     <button onclick="logEvent('goals',${id},{type:''})">⚽ Goal</button>
     <button onclick="logEvent('goals',${id},{type:'Penalty'})">⚽ Penalty goal</button>
@@ -490,7 +515,7 @@ function renderMatch(){
     <h2 style="text-align:center">${esc(m.title)}</h2>
     <div class="mhead"><b>${esc(tname(m.home))}</b><span>${m.hs ?? '–'} : ${m.as ?? '–'}</span><b>${esc(tname(m.away))}</b></div>${pens}
     <p style="text-align:center;font-size:1.1rem">⏱ <span id="clock">${clockLabel(c)}</span></p>
-    ${clockBtns}${susp}${pads}<h3>Match events</h3>${list}`;
+    ${clockBtns}${susp}${pads}<h3>Match events</h3>${list}${squadLists(m.home, m.away)}`;
 }
 /* ---------- suspensions ----------
    Rules: a red card = banned for the team's next match.
@@ -600,8 +625,74 @@ function renderScorers(){
     : '<p class="mut">No goals recorded yet.</p>');
 }
 
+/* ---------- schedule ---------- */
+// full ordered match list: group matches (interleaved across groups) then knockout rounds
+function allMatches(){
+  const byG = S.groups.map(g => S.matches.filter(m => m.group === g));
+  const grp = [], max = Math.max(0, ...byG.map(x => x.length));
+  for (let i = 0; i < max; i++) byG.forEach(list => list[i] && grp.push(list[i]));
+  const out = grp.map(m => ({key: 'g' + m.id, stage: 'Group ' + m.group, home: m.home, away: m.away, hs: m.hs, as: m.as}));
+  if (S.ko) koRounds().forEach(rnd => rnd.forEach(m => {
+    if (m.home === null || m.away === null) return; // byes are not played
+    out.push({key: `k${m.r}-${m.i}`, stage: roundName(rnd.length * 2), home: m.home, away: m.away, hs: m.hs, as: m.as, ph: m.ph, pa: m.pa, ko: true});
+  }));
+  // assign day + kickoff
+  const sc = S.sched || {days: 1, date: new Date().toISOString().slice(0, 10), time: '09:00', slot: 30};
+  const days = Math.max(1, sc.days), gCount = grp.length, perDay = Math.ceil(gCount / days) || 1;
+  const slotIdx = {};
+  out.forEach((m, i) => {
+    m.day = m.ko ? days : Math.min(days, Math.floor(i / perDay) + 1);
+    slotIdx[m.day] = (slotIdx[m.day] ?? -1) + 1;
+    const [hh, mm] = sc.time.split(':').map(Number);
+    const d = new Date(sc.date + 'T00:00:00'); d.setDate(d.getDate() + m.day - 1);
+    d.setHours(hh, mm + slotIdx[m.day] * sc.slot, 0, 0);
+    m.when = d; m.played = m.hs != null && m.as != null && (((S.clocks || {})[m.key] || {}).phase === 'FT' || !((S.clocks || {})[m.key] || {}).phase);
+    m.live = ['RUN', 'PAUSE'].includes(((S.clocks || {})[m.key] || {}).phase);
+    m.ready = m.home !== undefined && m.away !== undefined;
+  });
+  return out;
+}
+const fmtWhen = d => d.toLocaleDateString(undefined, {weekday: 'short', day: 'numeric', month: 'short'}) + ' · ' + d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+const dayLabel = m => (S.sched?.days || 1) > 1 ? `Day ${m.day} · ` : '';
+function matchCard(m, big){
+  const live = m.live ? `<span class="badge admin">LIVE · ${clockLabel(S.clocks[m.key]).replace(/<[^>]+>/g, '')}</span>` : '';
+  const score = m.hs != null && m.as != null ? `${m.hs} : ${m.as}` : 'vs';
+  const pen = m.ph != null && m.pa != null && m.hs === m.as ? `<div class="mut">Penalties ${m.ph} – ${m.pa}</div>` : '';
+  return `<div class="ko" style="${big ? 'font-size:1.15rem;padding:14px' : ''};cursor:pointer" onclick="openMatch('${m.key}')">
+    <div class="mut">${esc(m.stage)} · ${dayLabel(m)}${fmtWhen(m.when)} ${live}</div>
+    <div class="row"><b style="flex:1">${esc(m.ready ? tname(m.home) : 'TBD')}</b><b style="font-size:1.2em">${score}</b><b style="flex:1;text-align:right">${esc(m.ready ? tname(m.away) : 'TBD')}</b></div>${pen}${goalLine(m.key)}</div>`;
+}
+function renderHome(){
+  if (!S.groups.length){ $('homeView').innerHTML = `<div class="card mut">No tournament set up yet. ${isAdmin ? 'Go to Setup.' : 'Check back soon!'}</div>`; return; }
+  const ms = allMatches();
+  const live = ms.filter(m => m.live);
+  const done = ms.filter(m => m.hs != null && m.as != null && !m.live);
+  const upcoming = ms.filter(m => !m.live && (m.hs == null || m.as == null));
+  const next = upcoming[0];
+  const champ = S.ko ? koRounds().at(-1)[0].winner : undefined;
+  const tables = S.groups.map(g => {
+    const st = standings(g);
+    return `<div class="card"><h3>Group ${g}</h3><table><tr><th>#</th><th>Team</th><th>P</th><th>GD</th><th>Pts</th></tr>
+      ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.GF-r.GA}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table></div>`;
+  }).join('');
+  const played = done.length, total = ms.length;
+  $('homeView').innerHTML = `
+    ${champ != null ? `<div class="card champ">🏆 Champion: <b>${esc(tname(champ))}</b></div>` : ''}
+    <div class="card"><span class="badge">${played} of ${total} matches played</span>
+      <span class="badge">${(S.sched?.days || 1) === 1 ? 'One-day tournament' : S.sched.days + '-day tournament'}</span></div>
+    ${live.length ? `<div class="card" style="border-color:var(--warn)"><h2>🔴 Live now</h2>${live.map(m => matchCard(m, true)).join('')}</div>` : ''}
+    <div class="grid">
+      <div class="card"><h2>⏭ Next match</h2>${next ? matchCard(next, true) : '<p class="mut">No upcoming matches.</p>'}
+        ${upcoming.length > 1 ? `<h3 style="margin-top:14px">Coming up</h3>${upcoming.slice(1, 5).map(m => matchCard(m)).join('')}` : ''}</div>
+      <div class="card"><h2>✅ Latest results</h2>${done.length ? done.slice(-6).reverse().map(m => matchCard(m)).join('') : '<p class="mut">No results yet.</p>'}</div>
+    </div>
+    <h2>Standings</h2><div class="grid">${tables}</div>
+    <p class="mut">Tap any match to see its details.</p>`;
+}
+setInterval(() => { if (!$('tab-home').classList.contains('hidden') && document.activeElement?.tagName !== 'INPUT') { try { renderHome(); } catch(e){} } }, 15000);
+
 /* ---------- tabs & data ---------- */
-function showTab(t){ ['setup','groups','knockout','match','squads'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
+function showTab(t){ ['home','setup','groups','knockout','match','squads'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
   document.querySelectorAll('nav [data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t)); }
 document.querySelectorAll('nav [data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 $('exportBtn').onclick = () => { const a = document.createElement('a');
@@ -610,7 +701,7 @@ $('importFile').onchange = e => { const f = e.target.files[0]; if (!f) return; f
 $('resetBtn').onclick = () => { if (confirm('Delete everything?')){ S = blank(); save(); $('teamRows').innerHTML = ''; render(); } };
 
 window.addEventListener('unhandledrejection', e => e.preventDefault());
-showTab('groups'); load().catch(() => {});
+showTab('home'); load().catch(() => {});
 </script>
 </body>
 </html>
