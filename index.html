@@ -44,6 +44,9 @@
   .gl span{margin-right:10px}
   .mhead{display:flex;align-items:center;justify-content:center;gap:18px;font-size:1.5rem;margin:10px 0}
   .mini{padding:3px 8px;font-size:.75rem}
+.sqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;align-items:start}
+  .sqgrid .card{margin:0}
+  .sqText{width:100%;min-height:220px;resize:vertical;background:#0b1222;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:7px;font:inherit}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -59,7 +62,7 @@
     <button class="sec" data-tab="squads">Squads</button>
     <button class="sec admin-only" data-tab="setup">Setup</button>
     <span id="modeBadge" class="badge">Viewer</span>
-    <button class="sec" id="loginBtn">Admin login</button>
+    <button class="sec" id="loginBtn">Login</button>
   </nav>
 </header>
 <div id="status" class="mut" style="padding:6px 20px;background:#020617"></div>
@@ -90,6 +93,11 @@
       <div id="teamRows" class="mut">Click "Create team list" first.</div>
       <p><button class="sec" id="autoAssign">Auto-assign groups randomly</button>
          <button id="genFixtures">Generate fixtures</button></p>
+    </div>
+    <div class="card">
+      <h2>Team managers</h2>
+      <p class="mut">Team managers can log in and edit only their own team's squad. First create their login in Firebase (Authentication → Users → Add user), then add their email here.</p>
+      <div id="rolesView"></div>
     </div>
     <div class="card">
       <h2>3. Publish / backup</h2>
@@ -141,6 +149,8 @@ const firebaseConfig = {
 const DOC_PATH = 'tournaments/main';
 const LS_KEY = 'football_tournament_v1';
 let isAdmin = false, online = false, db = null, auth = null;
+let role = null, myTeam = null, SQ = {}, ROLES = [];
+const sqKey = name => String(name).replace(/[\/]/g, '-').trim();
 let S = blank();
 
 function blank(){ return {name:'My Cup 2026', qualifiers:2, groups:[], teams:[], matches:[], ko:null, goals:{}, cards:{}, squads:{}}; }
@@ -163,9 +173,24 @@ async function load(){
     if (window.firebase && !firebaseConfig.apiKey.startsWith('PASTE')){
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore(); auth = firebase.auth(); online = true;
-      auth.onAuthStateChanged(u => { isAdmin = !!u; safeRender(); });
+      auth.onAuthStateChanged(async u => {
+        role = null; myTeam = null; isAdmin = false; ROLES = [];
+        if (u){
+          try {
+            const r = await db.collection('roles').doc(u.email.toLowerCase()).get();
+            if (r.exists && r.data().role === 'manager'){ role = 'manager'; myTeam = r.data().team; }
+            else { role = 'admin'; isAdmin = true; loadRoles(); }
+          } catch(e){ role = 'admin'; isAdmin = true; }
+        }
+        safeRender();
+      });
+      db.collection('squads').onSnapshot(snap => {
+        SQ = {}; snap.forEach(d => { const x = d.data(); if (x.team) SQ[x.team] = x.players || []; });
+        S.squads = Object.assign({}, S.squads || {}, SQ); safeRender();
+      }, err => console.warn(err));
       db.doc(DOC_PATH).onSnapshot(snap => {
         S = snap.exists ? Object.assign(blank(), snap.data()) : blank();
+        S.squads = Object.assign({}, S.squads || {}, SQ);
         safeRender();
       }, err => status('🔴 Database error: ' + err.message));
       status('🟢 Live – results are synced online for everyone');
@@ -180,13 +205,13 @@ async function load(){
 
 /* ---------- admin ---------- */
 $('loginBtn').onclick = async () => {
-  if (isAdmin){ if (online) await auth.signOut(); isAdmin = false; return safeRender(); }
+  if (isAdmin || role){ if (online) await auth.signOut(); isAdmin = false; role = null; myTeam = null; return safeRender(); }
   if (!online){
     const p = prompt('Demo admin password (offline mode):');
     if (p === 'admin123'){ isAdmin = true; safeRender(); } else if (p != null) alert('Wrong password');
     return;
   }
-  const email = prompt('Admin email:'); if (!email) return;
+  const email = prompt('Email (admin or team manager):'); if (!email) return;
   const pw = prompt('Password:'); if (!pw) return;
   try { await auth.signInWithEmailAndPassword(email.trim(), pw); }
   catch(e){ alert('Login failed: ' + e.message); }
@@ -322,11 +347,11 @@ function stillValid(){ return true; } // keep later scores; team names update au
 /* ---------- render ---------- */
 function render(){
   S.goals = S.goals || {}; S.cards = S.cards || {}; S.squads = S.squads || {}; S.fouls = S.fouls || {}; S.clocks = S.clocks || {};
-  try { renderScorers(); renderCards(); renderSuspensions(); renderSquads(); renderHome(); if (currentMatch && !$('tab-match').classList.contains('hidden')) renderMatch(); } catch(e){ console.warn(e); }
+  try { renderScorers(); renderCards(); renderSuspensions(); renderSquads(); renderHome(); if (isAdmin) renderRoles(); if (currentMatch && !$('tab-match').classList.contains('hidden')) renderMatch(); } catch(e){ console.warn(e); }
   $('title').textContent = '⚽ ' + (S.name || 'Football Tournament');
-  $('modeBadge').textContent = isAdmin ? 'Admin' : 'Viewer';
+  $('modeBadge').textContent = isAdmin ? 'Admin' : role === 'manager' ? 'Manager · ' + (myTeam || '?') : 'Viewer';
   $('modeBadge').className = 'badge' + (isAdmin ? ' admin' : '');
-  $('loginBtn').textContent = isAdmin ? 'Log out' : 'Admin login';
+  $('loginBtn').textContent = (isAdmin || role) ? 'Log out' : 'Login';
   document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !isAdmin));
   if (!isAdmin && !$('tab-setup').classList.contains('hidden')) showTab('home');
   $('tName').value = S.name; $('nQual').value = S.qualifiers;
@@ -581,25 +606,53 @@ function pickedPlayer(id){
   const el = $(id); if (el.value === '__other') return $(id + 'Other').value.trim();
   return el.value.trim();
 }
+const canEditSquad = name => isAdmin || (role === 'manager' && sqKey(myTeam) === sqKey(name));
 function renderSquads(){
   if (!S.teams.length){ $('squadsView').innerHTML = '<div class="card mut">No teams yet.</div>'; return; }
-  if (isAdmin && document.activeElement && document.activeElement.classList.contains('sqText')) return; // don't overwrite while typing
-  $('squadsView').innerHTML = (isAdmin ? `<div class="card"><p class="mut">Enter one player per line (you can add a shirt number, e.g. "10 Ahmed"). Click Save squads when done.</p>
-      <button onclick="saveSquads()">Save squads</button></div>` : '') +
-    `<div class="grid">${S.groups.map(g => S.teams.filter(t => t.group === g).map(t => {
-      const sq = S.squads[t.name] || [];
-      return `<div class="card"><h3>${esc(t.name)} <span class="badge">Group ${g}</span> <span class="badge">${sq.length} players</span></h3>` +
-        (isAdmin ? `<textarea class="sqText" data-team="${esc(t.name)}" rows="8" style="width:100%;background:#0b1222;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:7px">${esc(sq.join('\n'))}</textarea>`
-                 : (sq.length ? `<ol style="margin:0;padding-left:20px">${sq.map(n => `<li>${esc(n)}</li>`).join('')}</ol>` : '<p class="mut">Squad not entered yet.</p>'));
-    }).join('')).join('')}</div>`;
+  if (document.activeElement && document.activeElement.classList.contains('sqText')) return; // don't overwrite while typing
+  const anyEdit = S.teams.some(t => canEditSquad(t.name));
+  const teams = role === 'manager' ? [...S.teams].sort((a, b) => canEditSquad(b.name) - canEditSquad(a.name)) : S.teams;
+  $('squadsView').innerHTML = (anyEdit ? `<div class="card"><p class="mut">One player per line, starting with the shirt number, e.g. "10 Ahmed". Click Save squad when done.
+      ${role === 'manager' ? `<br>You are logged in as manager of <b>${esc(myTeam)}</b> and can edit only that squad.` : ''}</p></div>` : '') +
+    `<div class="sqgrid">${teams.map(t => {
+      const sq = S.squads[t.name] || [], ed = canEditSquad(t.name);
+      return `<div class="card sqcard"><h3>${esc(t.name)} <span class="badge">Group ${t.group}</span> <span class="badge">${sq.length} players</span></h3>` +
+        (ed ? `<textarea class="sqText" data-team="${esc(t.name)}" rows="12">${esc(sq.join('\n'))}</textarea>
+               <p><button onclick="saveSquad(this)">Save squad</button></p>`
+            : (sq.length ? `<ol style="margin:0;padding-left:20px">${sq.map(n => `<li>${esc(n)}</li>`).join('')}</ol>` : '<p class="mut">Squad not entered yet.</p>'));
+    }).join('')}</div>`;
 }
-function saveSquads(){
-  document.querySelectorAll('.sqText').forEach(t => {
-    const names = [...new Set(t.value.split('\n').map(s => s.trim()).filter(Boolean))];
-    S.squads[t.dataset.team] = names;
-  });
-  document.activeElement && document.activeElement.blur();
-  save(); render(); alert('Squads saved.');
+async function saveSquad(btn){
+  const t = btn.closest('.sqcard').querySelector('.sqText'), name = t.dataset.team;
+  const players = [...new Set(t.value.split('\n').map(s => s.trim()).filter(Boolean))];
+  try {
+    if (online) await db.collection('squads').doc(sqKey(name)).set({team: name, players, by: auth.currentUser.email, at: Date.now()});
+    else { S.squads[name] = players; save(); }
+    S.squads[name] = players; t.blur(); render(); alert('Squad saved for ' + name + '.');
+  } catch(e){ alert('Save failed: ' + e.message); }
+}
+/* ---------- team manager accounts (admin) ---------- */
+async function loadRoles(){
+  if (!online) return;
+  try { const s = await db.collection('roles').get(); ROLES = []; s.forEach(d => ROLES.push({email: d.id, ...d.data()})); renderRoles(); } catch(e){ console.warn(e); }
+}
+function renderRoles(){
+  const el = $('rolesView'); if (!el) return;
+  if (!online){ el.innerHTML = '<p class="mut">Available once Firebase is configured.</p>'; return; }
+  el.innerHTML = (ROLES.length ? `<table><tr><th>Email</th><th>Team</th><th></th></tr>${ROLES.map(r => `<tr><td style="text-align:left">${esc(r.email)}</td><td>${esc(r.team)}</td>
+      <td><button class="danger mini" onclick="delRole('${esc(r.email)}')">Remove</button></td></tr>`).join('')}</table>` : '<p class="mut">No team managers yet.</p>') +
+    `<p><input id="rEmail" placeholder="manager email" style="width:220px">
+     <select id="rTeam">${S.teams.map(t => `<option>${esc(t.name)}</option>`).join('')}</select>
+     <button onclick="addRole()">Add manager</button></p>`;
+}
+async function addRole(){
+  const email = $('rEmail').value.trim().toLowerCase(), team = $('rTeam').value;
+  if (!email.includes('@')) return alert('Enter a valid email.');
+  try { await db.collection('roles').doc(email).set({role: 'manager', team}); loadRoles(); } catch(e){ alert('Failed: ' + e.message); }
+}
+async function delRole(email){
+  if (!confirm('Remove manager ' + email + '?')) return;
+  try { await db.collection('roles').doc(email).delete(); loadRoles(); } catch(e){ alert('Failed: ' + e.message); }
 }
 function renderCards(){
   const t = {};
