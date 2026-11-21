@@ -609,22 +609,34 @@ function pickedPlayer(id){
 const canEditSquad = name => isAdmin || (role === 'manager' && sqKey(myTeam) === sqKey(name));
 function renderSquads(){
   if (!S.teams.length){ $('squadsView').innerHTML = '<div class="card mut">No teams yet.</div>'; return; }
-  if (document.activeElement && document.activeElement.classList.contains('sqText')) return; // don't overwrite while typing
+  if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.sqcard')) return; // don't overwrite while typing
   const anyEdit = S.teams.some(t => canEditSquad(t.name));
   const teams = role === 'manager' ? [...S.teams].sort((a, b) => canEditSquad(b.name) - canEditSquad(a.name)) : S.teams;
-  $('squadsView').innerHTML = (anyEdit ? `<div class="card"><p class="mut">One player per line, starting with the shirt number, e.g. "10 Ahmed". Click Save squad when done.
+  $('squadsView').innerHTML = (anyEdit ? `<div class="card"><p class="mut">Enter the jersey number and player name. Use + Add player for more rows, then click Save squad.
       ${role === 'manager' ? `<br>You are logged in as manager of <b>${esc(myTeam)}</b> and can edit only that squad.` : ''}</p></div>` : '') +
     `<div class="sqgrid">${teams.map(t => {
       const sq = S.squads[t.name] || [], ed = canEditSquad(t.name);
       return `<div class="card sqcard"><h3>${esc(t.name)} <span class="badge">Group ${t.group}</span> <span class="badge">${sq.length} players</span></h3>` +
-        (ed ? `<textarea class="sqText" data-team="${esc(t.name)}" rows="12">${esc(sq.join('\n'))}</textarea>
-               <p><button onclick="saveSquad(this)">Save squad</button></p>`
-            : (sq.length ? `<ol style="margin:0;padding-left:20px">${sq.map(n => `<li>${esc(n)}</li>`).join('')}</ol>` : '<p class="mut">Squad not entered yet.</p>'));
+        (ed ? `<table class="sqTable" data-team="${esc(t.name)}"><tr><th style="width:70px">No.</th><th>Player name</th><th></th></tr>
+                 ${(sq.length ? sq : ['', '', '']).map(n => sqRow(n)).join('')}</table>
+               <p><button class="sec mini" onclick="addSqRow(this)">+ Add player</button> <button onclick="saveSquad(this)">Save squad</button></p>`
+            : (sq.length ? `<table><tr><th style="width:70px">No.</th><th>Player name</th></tr>${sq.map(n => { const [no, nm] = splitPlayer(n);
+                 return `<tr><td>${esc(no)}</td><td>${esc(nm)}</td></tr>`; }).join('')}</table>` : '<p class="mut">Squad not entered yet.</p>')) + '</div>';
     }).join('')}</div>`;
 }
+function splitPlayer(s){ const m = String(s).match(/^\s*(\d+)\s+(.*)$/); return m ? [m[1], m[2]] : ['', String(s)]; }
+function sqRow(n){ const [no, nm] = splitPlayer(n || '');
+  return `<tr><td><input class="sqNo" type="number" min="0" max="999" value="${esc(no)}" style="width:62px"></td>
+    <td><input class="sqName" value="${esc(nm)}" placeholder="Player name" style="width:100%"></td>
+    <td><button class="danger mini" onclick="this.closest('tr').remove()">✕</button></td></tr>`; }
+function addSqRow(btn){ btn.closest('.sqcard').querySelector('.sqTable tbody, .sqTable').insertAdjacentHTML('beforeend', sqRow('')); }
 async function saveSquad(btn){
-  const t = btn.closest('.sqcard').querySelector('.sqText'), name = t.dataset.team;
-  const players = [...new Set(t.value.split('\n').map(s => s.trim()).filter(Boolean))];
+  const tb = btn.closest('.sqcard').querySelector('.sqTable'), name = tb.dataset.team;
+  const rows = [...tb.querySelectorAll('tr')].slice(1).map(r => [r.querySelector('.sqNo').value.trim(), r.querySelector('.sqName').value.trim()]).filter(r => r[1]);
+  const nos = rows.map(r => r[0]).filter(Boolean);
+  if (new Set(nos).size !== nos.length) return alert('Two players have the same jersey number.');
+  const players = [...new Set(rows.map(([no, nm]) => no ? no + ' ' + nm : nm))];
+  const t = {blur(){}};
   try {
     if (online) await db.collection('squads').doc(sqKey(name)).set({team: name, players, by: auth.currentUser.email, at: Date.now()});
     else { S.squads[name] = players; save(); }
