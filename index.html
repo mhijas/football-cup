@@ -148,6 +148,58 @@ input,select,textarea,.sqText{background:#fff;color:var(--txt);border:1px solid 
 .lgIcon{width:72px;height:72px;margin:0 auto 10px;border-radius:50%;background:#e8ebf5;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .lgErr{background:#fdecec;color:#b42318;border-radius:8px;padding:8px 10px;margin-top:10px;font-size:.9rem}
 .loginCard a{color:var(--acc);text-decoration:none;font-size:.9rem}
+
+.tlink{color:inherit;font-weight:600;text-decoration:none;border-bottom:1px dotted #9aa3c7}
+.tlink:hover{color:var(--acc)}
+.sqlist{display:flex;flex-direction:column;gap:10px}
+.sqlist .card{margin:0;padding:12px 16px}
+.sqHead{cursor:pointer;margin:0;user-select:none;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sqHead:hover{color:var(--acc)}
+.sqlist .sqTable,.sqlist table{margin-top:10px}
+#archBar{background:#fff7e0;color:#6b4e00;padding:8px 20px;border-bottom:1px solid #f1d58a}
+#archBar a{color:var(--acc);font-weight:600}
+@media (min-width:901px){ #archBar{margin-left:270px} }
+.poster{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line);color:#1b2343}
+.poster .phd{background:linear-gradient(135deg,#13235b,#5b4bb7 60%,#0f766e);color:#fff;padding:28px 20px;text-align:center}
+.poster .phd h1{margin:4px 0;font-size:2rem;letter-spacing:1px;color:#fff}
+.poster .psec{padding:16px 22px}
+.poster .psec h2{text-transform:uppercase;letter-spacing:2px;font-size:1rem;color:#5b4bb7;border-bottom:2px solid #eceaf8;padding-bottom:6px}
+.pgroups{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.pgroup{border:1px solid #e3e6f0;border-radius:12px;overflow:hidden}
+.pgh{background:#13235b;color:#fff;font-weight:700;text-align:center;padding:8px;letter-spacing:2px}
+.pteam{padding:8px 12px;border-top:1px solid #eef0f6;font-weight:600}
+.ptable td{padding:7px 6px}
+.pday td{background:#f1f0fb;color:#13235b;font-weight:700;text-align:left!important}
+.pno{display:inline-block;min-width:28px;padding:2px 6px;border-radius:6px;background:#5b4bb7;color:#fff;font-weight:700;font-size:.8rem}
+.pvs{font-weight:700;color:#5b4bb7;white-space:nowrap}
+.poster .bracket{flex-wrap:wrap;overflow:visible}
+.pfoot{text-align:center;color:#8a90ad;font-size:.8rem;padding:10px 0 16px}
+@media (max-width:700px){ .ptable{font-size:.75rem} .ptable td:nth-child(3),.ptable th:nth-child(3),.ptable td:nth-child(7),.ptable th:nth-child(7){display:none} .poster .phd h1{font-size:1.4rem} }
+@media print{
+  body{background:#fff!important}
+  header,#sideNav,#overlay,#status,#archBar,#posterActions{display:none!important}
+  main{margin:0!important;padding:0!important}
+  main>section:not(#tab-poster){display:none!important}
+  #tab-poster{display:block!important}
+  .poster{border:0;box-shadow:none}
+  .pday td,.pgh,.phd,.pno{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ptable tr{break-inside:avoid}
+}
+
+.gl2{display:grid;grid-template-columns:1fr 2px 1fr;gap:10px;font-size:.8rem;color:var(--mut);padding:4px 0 6px}
+.gl2 .glh{text-align:right} .gl2 .glm{background:var(--line);border-radius:2px}
+.gl2 i{font-style:normal;opacity:.8}
+#matchView .gl2{font-size:.95rem;max-width:560px;margin:4px auto 10px;color:var(--txt)}
+tr.clk{cursor:pointer} tr.clk:hover td{background:#f3f2fd}
+tr.cleared td{opacity:.6}
+.badge.ok{background:#e3f6ea;color:#1f7a45} .badge.bad{background:#fdecec;color:#b42318}
+.evtag{font-size:.8rem;font-weight:600;color:var(--acc);margin:10px 0 4px}
+button[disabled]{opacity:.35;cursor:default}
+.sortit{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:10px;transition:background .15s}
+.sortit:hover{background:#f3f2fd}
+.sortit.dragging{background:#e8e5fb;box-shadow:0 6px 18px rgba(19,35,91,.18);cursor:grabbing;position:relative;z-index:5}
+.dgrip{color:#9aa3c7;font-size:1.1rem;padding:0 6px;cursor:grab}
+body.nosel,body.nosel *{user-select:none!important;-webkit-user-select:none!important;cursor:grabbing!important}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -168,12 +220,15 @@ input,select,textarea,.sqText{background:#fff;color:var(--txt);border:1px solid 
   <button data-tab="groups"><i>📊</i>Groups & Standings</button>
   <button data-tab="knockout"><i>🏆</i>Knockout</button>
   <button data-tab="squads"><i>👥</i>Squads</button>
+  <button data-tab="poster"><i>🌍</i>Full fixture</button>
+  <button data-tab="history"><i>🗄️</i>History</button>
   <div class="navsec admin-only">Organizer</div>
   <button class="admin-only" data-tab="setup"><i>🗂️</i>Organizer page</button>
   <div class="navsec">User</div>
   <button id="loginBtn">🔐 Login</button>
 </nav>
 <div id="status" class="mut" style="padding:6px 20px;background:#020617"></div>
+<div id="archBar" class="hidden"></div>
 
 <main>
   <!-- SETUP -->
@@ -200,7 +255,12 @@ input,select,textarea,.sqText{background:#fff;color:var(--txt);border:1px solid 
       <h2>2. Teams & groups</h2>
       <div id="teamRows" class="mut">Click "Create team list" first.</div>
       <p><button class="sec" id="autoAssign">Auto-assign groups randomly</button>
-         <button id="genFixtures">Generate fixtures</button></p>
+         <button id="genFixtures">👁️ Preview fixtures</button></p>
+      <div id="fxPreview"></div>
+    </div>
+    <div class="card admin-only">
+      <h2>🏟️ Tournaments</h2>
+      <div id="tournAdmin"></div>
     </div>
     <div class="card">
       <h2>Team managers</h2>
@@ -234,6 +294,26 @@ input,select,textarea,.sqText{background:#fff;color:var(--txt);border:1px solid 
     </div>
   </section>
 
+  <!-- EVENT FILTER -->
+  <section id="tab-evlist" class="hidden"><div id="evView"></div></section>
+
+  <!-- TEAM -->
+  <section id="tab-team" class="hidden"><div id="teamView"></div></section>
+
+  <!-- HISTORY -->
+  <section id="tab-history" class="hidden"><div id="historyView"></div></section>
+
+  <!-- FULL FIXTURE (World Cup style) -->
+  <section id="tab-poster" class="hidden">
+    <div class="card" id="posterActions">
+      <b>🌍 Full fixture</b> <span class="mut">World Cup–style fixture of the whole tournament.</span>
+      <p style="margin-bottom:0"><button onclick="downloadPoster()">⬇️ Download image</button>
+        <button class="sec" onclick="printPoster()">🖨️ Download PDF / Print</button>
+        <button class="sec" onclick="sharePoster()">🔗 Share</button></p>
+    </div>
+    <div id="posterView"></div>
+  </section>
+
   <!-- FIXTURES -->
   <section id="tab-fixtures" class="hidden">
     <div class="card"><h2>📅 Fixtures & Schedule</h2><p class="mut" id="fxNote">Full match schedule in order of play.</p></div>
@@ -246,11 +326,12 @@ input,select,textarea,.sqText{background:#fff;color:var(--txt);border:1px solid 
   <!-- GROUPS -->
   <section id="tab-groups">
     <div id="groupsView"></div>
+    <div class="card" id="concView"></div>
     <div class="card" id="scorersView"></div>
     <div class="card" id="cardsView"></div>
     <div class="card" id="suspView"></div>
-    <div class="card admin-only"><button id="genKO">Generate knockout bracket from standings</button>
-      <span class="mut">Top teams per group advance. Re-generating clears knockout scores.</span></div>
+    <div class="card admin-only"><button class="sec" id="genKO">Rebuild knockout now</button>
+      <span class="mut">The knockout bracket fills in automatically when all group matches are finished. Use this only to build it early or rebuild it manually (clears knockout results).</span></div>
   </section>
 
   <!-- SQUADS -->
@@ -293,10 +374,99 @@ const tname = id => id == null ? 'BYE' : (team(id)?.name ?? 'TBD');
 const status = (msg) => { $('status').textContent = msg; };
 const safeRender = () => { try { render(); } catch(e){ console.warn(e); } };
 
+let TID = 'main', IDX = {current: 'main', list: []}, unsubDoc = null, opened = false;
+const lsKey = id => id === 'main' ? LS_KEY : LS_KEY + '_' + id;
+const idxEntry = id => IDX.list.find(x => x.id === id);
+const isArchived = () => { const e = idxEntry(TID); return !!(e && e.status === 'finished'); };
 function save(){
+  if (isArchived()) return;                              // finished tournaments are read-only
   const clean = JSON.parse(JSON.stringify(S));          // strips undefined values
-  if (online && isAdmin) db.doc(DOC_PATH).set(clean).catch(e => alert('Save failed: ' + e.message));
-  if (!online) { try { localStorage.setItem(LS_KEY, JSON.stringify(clean)); } catch(e){} }
+  if (online && isAdmin) db.collection('tournaments').doc(TID).set(clean).catch(e => alert('Save failed: ' + e.message));
+  if (!online) { try { localStorage.setItem(lsKey(TID), JSON.stringify(clean)); } catch(e){} }
+}
+function saveIdx(){
+  const clean = JSON.parse(JSON.stringify(IDX));
+  if (online) return db.doc('tournaments/_index').set(clean).catch(e => alert('Save failed: ' + e.message));
+  try { localStorage.setItem(LS_KEY + '_index', JSON.stringify(clean)); } catch(e){}
+}
+function openTournament(id){
+  TID = id; opened = true; currentMatch = null; currentTeam = null;
+  const tr = $('teamRows'); if (tr) tr.innerHTML = '';
+  if (unsubDoc){ unsubDoc(); unsubDoc = null; }
+  if (online){
+    unsubDoc = db.collection('tournaments').doc(id).onSnapshot(snap => {
+      S = snap.exists ? Object.assign(blank(), snap.data()) : blank();
+      if (!isArchived()) S.squads = Object.assign({}, S.squads || {}, SQ);
+      safeRender();
+    }, err => status('🔴 Database error: ' + err.message));
+  } else {
+    let l = null; try { l = localStorage.getItem(lsKey(id)); } catch(e){}
+    S = l ? Object.assign(blank(), JSON.parse(l)) : blank(); safeRender();
+  }
+}
+function ensureIdx(){
+  let e = idxEntry(TID);
+  if (!e){ e = {id: TID, name: S.name, status: 'active', created: Date.now()}; IDX.list.push(e); }
+  if (e.status !== 'finished') e.name = S.name;
+  return e;
+}
+const champName = () => { try { const w = S.ko ? koRounds().at(-1)[0].winner : undefined; return w != null ? tname(w) : ''; } catch(e){ return ''; } };
+function finishTournament(){
+  if (!confirm(`Mark "${S.name}" as finished and move it to History? It becomes read-only.`)) return;
+  save(); const e = ensureIdx();
+  Object.assign(e, {status: 'finished', champion: champName(), finished: Date.now()});
+  saveIdx(); safeRender();
+}
+function startNewTournament(){
+  const name = $('newTName').value.trim();
+  if (!name) return alert('Enter a name for the new tournament.');
+  const e = ensureIdx();
+  if (e.status !== 'finished'){
+    if (!confirm(`"${S.name}" is not finished yet. It will be moved to History as it is now. Continue?`)) return;
+    save(); Object.assign(e, {status: 'finished', champion: champName(), finished: Date.now()});
+  }
+  const id = 't' + Date.now();
+  IDX.list.push({id, name, status: 'active', created: Date.now()}); IDX.current = id;
+  TID = id; S = blank(); S.name = name; save(); saveIdx();
+  $('newTName').value = ''; openTournament(id); showTab('setup');
+}
+function reopenTournament(id){
+  if (!confirm('Re-open this tournament for editing?')) return;
+  const e = idxEntry(id); if (e){ e.status = 'active'; delete e.finished; } saveIdx(); safeRender();
+}
+function makeCurrent(id){ IDX.current = id; saveIdx(); safeRender(); }
+function viewTournament(id){ openTournament(id); showTab('home'); toggleMenu(false); }
+function renderHistory(){
+  const el = $('historyView'); if (!el) return;
+  const list = (IDX.list.length ? IDX.list : [{id: TID, name: S.name, status: 'active'}]).slice().sort((a, b) => (b.created || 0) - (a.created || 0));
+  const d = t => t ? new Date(t).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'}) : '';
+  el.innerHTML = `<div class="card"><h2>🗄️ Tournaments</h2><p class="mut">Current and past tournaments. Finished tournaments are kept here read-only.</p></div>
+    <div class="grid">${list.map(t => `<div class="card">
+      <h3 style="margin-top:0">${esc(t.name || 'Tournament')}</h3>
+      <p>${t.status === 'finished' ? '<span class="badge">🏁 Finished</span>' : '<span class="badge admin">Active</span>'}
+         ${t.id === IDX.current ? '<span class="badge mno">Current</span>' : ''} ${t.id === TID ? '<span class="badge">Viewing</span>' : ''}</p>
+      ${t.champion ? `<p>🏆 Champion: <b>${esc(t.champion)}</b></p>` : ''}
+      <p class="mut">${t.created ? 'Created ' + d(t.created) : ''}${t.finished ? ' · Finished ' + d(t.finished) : ''}</p>
+      <p>${t.id !== TID ? `<button onclick="viewTournament('${t.id}')">View</button>` : ''}
+        ${isAdmin && t.status === 'finished' ? `<button class="sec mini" onclick="reopenTournament('${t.id}')">Re-open</button>` : ''}
+        ${isAdmin && t.id !== IDX.current && t.status !== 'finished' ? `<button class="sec mini" onclick="makeCurrent('${t.id}')">Make current</button>` : ''}</p>
+    </div>`).join('')}</div>`;
+}
+function renderTournAdmin(){
+  const el = $('tournAdmin'); if (!el) return;
+  if (document.activeElement && el.contains(document.activeElement)) return;
+  const e = idxEntry(TID), fin = e && e.status === 'finished';
+  el.innerHTML = `<p>Now editing: <b>${esc(S.name)}</b> ${fin ? '<span class="badge">🏁 Finished (read-only)</span>' : '<span class="badge admin">Active</span>'}</p>
+    ${fin ? '' : `<p><button class="sec" onclick="finishTournament()">🏁 Mark as finished (move to History)</button></p>`}
+    <p><input id="newTName" placeholder="New tournament name" style="width:240px"> <button onclick="startNewTournament()">➕ Start new tournament</button></p>
+    <p class="mut">Starting a new tournament moves the current one to History. Squads are kept by team name, so returning teams keep their players.</p>`;
+}
+function renderArch(){
+  const el = $('archBar'); if (!el) return;
+  const e = idxEntry(TID), past = (e && e.status === 'finished') || (opened && IDX.list.length && TID !== IDX.current);
+  el.classList.toggle('hidden', !past);
+  if (past) el.innerHTML = `📁 You are viewing <b>${esc(S.name)}</b>${e && e.status === 'finished' ? ' (finished, read-only)' : ''}.
+    ${TID !== IDX.current ? `<a href="#" onclick="event.preventDefault(); viewTournament(IDX.current)">Go to current tournament →</a>` : ''}`;
 }
 
 /* ---------- load: live sync from Firebase (fallback: this browser only) ---------- */
@@ -318,17 +488,17 @@ async function load(){
       });
       db.collection('squads').onSnapshot(snap => {
         SQ = {}; snap.forEach(d => { const x = d.data(); if (x.team) SQ[x.team] = x.players || []; });
-        S.squads = Object.assign({}, S.squads || {}, SQ); safeRender();
+        if (!isArchived()) S.squads = Object.assign({}, S.squads || {}, SQ); safeRender();
       }, err => console.warn(err));
-      db.doc(DOC_PATH).onSnapshot(snap => {
-        S = snap.exists ? Object.assign(blank(), snap.data()) : blank();
-        S.squads = Object.assign({}, S.squads || {}, SQ);
-        safeRender();
-      }, err => status('🔴 Database error: ' + err.message));
+      db.doc('tournaments/_index').onSnapshot(snap => {
+        const d = snap.exists ? snap.data() : {};
+        IDX = {current: d.current || 'main', list: d.list || []};
+        if (!opened) openTournament(IDX.current); else safeRender();
+      }, err => { if (!opened) openTournament('main'); });
       status('🟢 Live – results are synced online for everyone');
     } else {
-      const local = (() => { try { return localStorage.getItem(LS_KEY); } catch(e){ return null; } })();
-      if (local) S = JSON.parse(local);
+      try { const ix = localStorage.getItem(LS_KEY + '_index'); if (ix) IDX = JSON.parse(ix); } catch(e){}
+      openTournament(IDX.current || 'main');
       status('⚠️ Offline demo mode – Firebase not configured yet, data stays in this browser only (demo admin password: admin123)');
     }
   } catch(e){ status('🔴 Could not connect: ' + e.message); }
@@ -400,33 +570,70 @@ $('autoAssign').onclick = () => {
   const g = sels[0].options.length, idx = sels.map((_, i) => i).sort(() => Math.random() - .5);
   idx.forEach((rowIdx, k) => sels[rowIdx].selectedIndex = k % g);
 };
+let PV = null;
 $('genFixtures').onclick = () => {
   const names = [...document.querySelectorAll('.tn')].map(i => i.value.trim());
   const grps = [...document.querySelectorAll('.tg')].map(s => s.value);
   if (!names.length) return alert('Create the team list first.');
   if (names.some(n => !n)) return alert('Every team needs a name.');
   if (new Set(names).size !== names.length) return alert('Team names must be unique.');
-  if (S.matches.some(m => m.hs !== null) && !confirm('This will erase all entered scores. Continue?')) return;
-  S.name = $('tName').value || 'Tournament';
-  S.qualifiers = Math.max(1, +$('nQual').value);
-  S.sched = {days: +$('sDays').value || 1, date: $('sDate').value || new Date().toISOString().slice(0, 10), time: $('sTime').value || '09:00', slot: Math.max(5, +$('sSlot').value || 30)};
-  S.teams = names.map((n, i) => ({id: i + 1, name: n, group: grps[i]}));
-  S.groups = [...new Set(grps)].sort();
-  for (const g of S.groups){
-    const c = S.teams.filter(t => t.group === g).length;
+  const qualifiers = Math.max(1, +$('nQual').value);
+  const teams = names.map((n, i) => ({id: i + 1, name: n, group: grps[i]}));
+  const groups = [...new Set(grps)].sort();
+  for (const g of groups){
+    const c = teams.filter(t => t.group === g).length;
     if (c < 2) return alert(`Group ${g} needs at least 2 teams.`);
-    if (S.qualifiers > c) return alert(`Group ${g} has fewer teams than the qualifiers per group.`);
+    if (qualifiers > c) return alert(`Group ${g} has fewer teams than the qualifiers per group.`);
   }
-  S.matches = []; S.ko = null; S.goals = {}; S.cards = {}; S.fouls = {}; S.clocks = {}; S.schedOv = {}; S.qualOv = {}; S.qualNote = {}; let mid = 1;
-  for (const g of S.groups){
-    const ids = S.teams.filter(t => t.group === g).map(t => t.id);
-    let n = 1;
-    for (let i = 0; i < ids.length; i++)
-      for (let j = i + 1; j < ids.length; j++)
-        S.matches.push({id: mid++, group: g, md: n++, home: ids[i], away: ids[j], hs: null, as: null});
+  const matches = []; let mid = 1;
+  for (const g of groups){
+    const ids = teams.filter(t => t.group === g).map(t => t.id); let n = 1;
+    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++)
+      matches.push({id: mid++, group: g, md: n++, home: ids[i], away: ids[j], hs: null, as: null});
   }
-  save(); render(); showTab('groups');
+  // default order: alternate between groups
+  const byG = groups.map(g => matches.filter(m => m.group === g)), order = [];
+  for (let i = 0; i < Math.max(...byG.map(x => x.length)); i++) byG.forEach(l => l[i] && order.push('g' + l[i].id));
+  PV = {name: $('tName').value || 'Tournament', qualifiers, teams, groups, matches, order, auto: order.slice(), ovr: false,
+        sched: {days: +$('sDays').value || 1, date: $('sDate').value || new Date().toISOString().slice(0, 10), time: $('sTime').value || '09:00', slot: Math.max(5, +$('sSlot').value || 30)}};
+  renderPreview(); $('fxPreview').scrollIntoView({behavior: 'smooth'});
 };
+function pvTimes(n, sc){
+  const days = Math.max(1, sc.days), per = Math.ceil(n / days) || 1, [hh, mm] = sc.time.split(':').map(Number);
+  return Array.from({length: n}, (_, i) => { const day = Math.min(days, Math.floor(i / per) + 1), si = i - (day - 1) * per;
+    const d = new Date(sc.date + 'T00:00:00'); d.setDate(d.getDate() + day - 1); d.setHours(hh, mm + si * sc.slot, 0, 0); return {day, d}; });
+}
+function renderPreview(){
+  if (!PV){ $('fxPreview').innerHTML = ''; return; }
+  setTimeout(pvSortable, 0);
+  const nm = id => esc(PV.teams.find(t => t.id === id)?.name || '?'), times = pvTimes(PV.order.length, PV.sched);
+  $('fxPreview').innerHTML = `<div class="card" style="margin-top:12px;border:2px solid var(--acc)">
+    <h3 style="margin-top:0">👁️ Fixture preview <span class="badge">${PV.order.length} group matches</span></h3>
+    <p class="mut">Nothing is saved yet. Check the order below, then confirm.${PV.ovr ? ' Press and drag a row (⠿), or type a new number in <b>Move to</b>. Kick-off times follow the new order.' : ''} Knockout matches are added after the group stage.</p>
+    <p><button class="${PV.ovr ? '' : 'sec'}" onclick="PV.ovr=!PV.ovr; renderPreview()">${PV.ovr ? '✅ Done reordering' : '🔀 Override match order'}</button>
+      ${PV.ovr ? '<button class="sec mini" onclick="pvReset()">↺ Reset to automatic order</button>' : ''}</p>
+    <table><tr>${PV.ovr ? '<th></th>' : ''}<th>#</th><th>Kick-off</th><th>Group</th><th style="text-align:right">Home</th><th></th><th style="text-align:left">Away</th>${PV.ovr ? '<th>Move to</th>' : ''}</tr>
+    ${PV.order.map((k, i) => { const m = PV.matches.find(x => 'g' + x.id === k), t = times[i];
+      return `<tr class="${PV.ovr ? 'sortit' : ''}" data-key="${k}">${PV.ovr ? '<td class="dgrip">⠿</td>' : ''}<td><span class="badge mno">${i + 1}</span></td><td>${PV.sched.days > 1 ? 'Day ' + t.day + ' · ' : ''}${t.d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</td>
+        <td>${m.group}</td><td style="text-align:right"><b>${nm(m.home)}</b></td><td>vs</td><td style="text-align:left"><b>${nm(m.away)}</b></td>
+        ${PV.ovr ? `<td><input type="number" min="1" max="${PV.order.length}" value="${i + 1}" style="width:58px" onchange="pvTo(${i}, this.value)"></td>` : ''}</tr>`; }).join('')}</table>
+    <p id="pvEnd"><button onclick="confirmFixtures()">✅ Confirm & generate fixtures</button> <button class="sec" onclick="PV=null; renderPreview()">Cancel</button></p></div>`;
+}
+function pvSortable(){ const t = $('fxPreview').querySelector('table'); if (PV && PV.ovr && t) makeSortable(t, 'tr.sortit', keys => { PV.order = keys; renderPreview(); }); }
+function pvTo(i, v){
+  const j = Math.min(PV.order.length, Math.max(1, parseInt(v) || i + 1)) - 1;
+  if (j !== i){ const [k] = PV.order.splice(i, 1); PV.order.splice(j, 0, k); }
+  renderPreview();
+}
+function pvReset(){ PV.order = PV.auto.slice(); renderPreview(); }
+function pvMove(i, d){ const j = i + d; if (j < 0 || j >= PV.order.length) return; [PV.order[i], PV.order[j]] = [PV.order[j], PV.order[i]]; renderPreview(); }
+function confirmFixtures(){
+  if (!PV) return;
+  if (S.matches.some(m => m.hs !== null) && !confirm('This will erase all entered scores and match events. Continue?')) return;
+  Object.assign(S, {name: PV.name, qualifiers: PV.qualifiers, sched: PV.sched, teams: PV.teams, groups: PV.groups, matches: PV.matches, order: PV.order,
+    ko: null, goals: {}, cards: {}, fouls: {}, clocks: {}, schedOv: {}, qualOv: {}, qualNote: {}});
+  PV = null; renderPreview(); save(); render(); showTab('fixtures');
+}
 // circle method round-robin
 function roundRobin(ids){
   const t = [...ids]; if (t.length % 2) t.push(null);
@@ -449,31 +656,42 @@ function standings(g){
   S.matches.filter(m => m.group === g && m.hs !== null && m.as !== null).forEach(m => {
     const h = rows[m.home], a = rows[m.away];
     h.P++; a.P++; h.GF += m.hs; h.GA += m.as; a.GF += m.as; a.GA += m.hs;
-    if (m.hs > m.as){ h.W++; a.L++; h.Pts += 3; } else if (m.hs < m.as){ a.W++; h.L++; a.Pts += 3; } else { h.D++; a.D++; h.Pts++; a.Pts++; }
+    if (m.hs > m.as){ h.W++; a.L++; h.Pts += 3; } else if (m.hs < m.as){ a.W++; h.L++; a.Pts += 3; } else if (m.toss === m.home){ h.W++; a.L++; h.Pts += 3; } else if (m.toss === m.away){ a.W++; h.L++; a.Pts += 3; } else { h.D++; a.D++; h.Pts++; a.Pts++; }
   });
   return Object.values(rows).sort((x, y) => y.Pts - x.Pts || (y.GF-y.GA) - (x.GF-x.GA) || y.GF - x.GF || x.id - y.id);
 }
 
 /* ---------- knockout ---------- */
-$('genKO').onclick = () => {
-  if (!S.matches.length) return alert('Generate fixtures first.');
-  const pending = S.matches.filter(m => m.hs === null || m.as === null).length;
-  if (pending && !confirm(`${pending} group match(es) have no score yet. Generate anyway?`)) return;
-  // seeds: all group winners, then all runners-up, ...
+function buildKO(){
   const tables = S.groups.map(g => finalOrder(g)), seeds = [];
   for (let pos = 0; pos < S.qualifiers; pos++) tables.forEach(t => t[pos] && seeds.push(t[pos].id));
-  if (seeds.length < 2) return alert('Need at least 2 qualified teams.');
+  if (seeds.length < 2) return null;
+  const plan = koPlan(tables.map(t => [t[0]?.id ?? null, t[1]?.id ?? null]));
+  if (plan) return {size: plan.first.length * 2, first: plan.first, labels: plan.labels, results: {}};
   let size = 2; while (size < seeds.length) size *= 2;
   const first = [];
   for (let i = 0; i < size / 2; i++) first.push({home: seeds[i] ?? null, away: seeds[size - 1 - i] ?? null});
-  // order the first round so top seeds land in opposite halves
-  Object.keys(S.goals || {}).forEach(k => { if (k[0] === 'k') delete S.goals[k]; });
-  Object.keys(S.cards || {}).forEach(k => { if (k[0] === 'k') delete S.cards[k]; });
-  ['fouls','clocks'].forEach(f => Object.keys(S[f] || {}).forEach(k => { if (k[0] === 'k') delete S[f][k]; }));
-  const plan = koPlan(tables.map(t => [t[0]?.id ?? null, t[1]?.id ?? null]));
-  if (plan){ S.ko = {size: plan.first.length * 2, first: plan.first, labels: plan.labels, results: {}}; save(); render(); showTab('knockout'); return; }
-  S.ko = {size, first: bracketOrder(size / 2).map(i => first[i]), results: {}};
-  save(); render(); showTab('knockout');
+  return {size, first: bracketOrder(size / 2).map(i => first[i]), results: {}};
+}
+function clearKOEvents(){
+  ['goals', 'cards', 'fouls', 'clocks'].forEach(f => Object.keys(S[f] || {}).forEach(k => { if (k[0] === 'k') delete S[f][k]; }));
+}
+const koStarted = () => !!S.ko && (Object.keys(S.ko.results || {}).length > 0 ||
+  ['goals', 'cards', 'fouls', 'clocks'].some(f => Object.keys(S[f] || {}).some(k => k[0] === 'k')));
+// builds the knockout automatically as soon as every group match is finished
+function autoKO(){
+  if (!isAdmin || isArchived() || !S.matches.length) return;
+  if (!S.matches.every(m => m.hs != null && m.as != null)) return;
+  const k = buildKO(); if (!k) return;
+  if (!S.ko || (!koStarted() && JSON.stringify(S.ko.first) !== JSON.stringify(k.first))){ S.ko = k; save(); }
+}
+$('genKO').onclick = () => {
+  if (!S.matches.length) return alert('Generate fixtures first.');
+  const pending = S.matches.filter(m => m.hs === null || m.as === null).length;
+  if (pending && !confirm(`${pending} group match(es) are not finished. Build the bracket from the current standings anyway?`)) return;
+  if (koStarted() && !confirm('Knockout results already exist and will be cleared. Continue?')) return;
+  const k = buildKO(); if (!k) return alert('Need at least 2 qualified teams.');
+  clearKOEvents(); S.ko = k; save(); render(); showTab('knockout');
 };
 function bracketOrder(n){ let o = [0]; while (o.length < n){ const m = o.length * 2; o = o.flatMap(x => [x, m - 1 - x]); } return o; }
 const roundName = teams => teams === 2 ? 'Final' : teams === 4 ? 'Semi-finals' : teams === 8 ? 'Quarter-finals' : `Round of ${teams}`;
@@ -494,8 +712,9 @@ function winner(m){
   if (m.home === null) return m.away; if (m.away === null) return m.home; // bye
   if (m.hs == null || m.as == null) return undefined;
   if (m.hs !== m.as) return m.hs > m.as ? m.home : m.away;
-  if (m.ph == null || m.pa == null || m.ph === m.pa) return undefined;
-  return m.ph > m.pa ? m.home : m.away;
+  if (m.ph != null && m.pa != null && m.ph !== m.pa) return m.ph > m.pa ? m.home : m.away;
+  if (m.toss != null) return m.toss;                      // won by toss
+  return undefined;
 }
 function setKO(r, i, field, val){
   const k = `${r}-${i}`; S.ko.results[k] = S.ko.results[k] || {};
@@ -508,8 +727,9 @@ function stillValid(){ return true; } // keep later scores; team names update au
 
 /* ---------- render ---------- */
 function render(){
+  try { autoKO(); } catch(e){ console.warn(e); }
   S.goals = S.goals || {}; S.cards = S.cards || {}; S.squads = S.squads || {}; S.fouls = S.fouls || {}; S.clocks = S.clocks || {};
-  try { renderScorers(); renderCards(); renderSuspensions(); renderSquads(); renderHome(); renderFixtures(); try { renderOverride(); } catch(e){} if (isAdmin) renderRoles();
+  try { renderConceded(); renderScorers(); renderCards(); renderSuspensions(); renderSquads(); renderHome(); renderFixtures(); renderHistory(); renderTournAdmin(); renderArch(); renderPoster(); if (!$('tab-team').classList.contains('hidden')) renderTeam(); if (!$('tab-evlist').classList.contains('hidden')) renderEvList(); try { renderOverride(); } catch(e){} if (isAdmin) renderRoles();
   $('brandName').textContent = S.name || 'Tournament'; if (currentMatch && !$('tab-match').classList.contains('hidden')) renderMatch(); } catch(e){ console.warn(e); }
   $('title').textContent = '⚽ ' + (S.name || 'Football Tournament');
   $('modeBadge').textContent = isAdmin ? 'Admin' : role === 'manager' ? 'Manager · ' + (myTeam || '?') : 'Viewer';
@@ -526,7 +746,7 @@ function render(){
   else $('groupsView').innerHTML = `<div class="grid">${S.groups.map(g => {
     const st = standings(g);
     const tbl = `<table><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>
-      ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td>${r.GF-r.GA}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table>`;
+      ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${teamLink(r.id)}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td>${r.GF-r.GA}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table>`;
     const sch = {}; try { allMatches().forEach(x => sch[x.key] = x); } catch(e){}
     const ms = S.matches.filter(m => m.group === g).map(m => `<div class="mut" style="margin-top:6px">${sch['g'+m.id] ? dayLabel(sch['g'+m.id]) + fmtWhen(sch['g'+m.id].when) : ''}</div><div class="match"><span class="badge mno">#${sch['g'+m.id] ? sch['g'+m.id].no : m.md}</span>
       <span class="t r">${esc(tname(m.home))}</span>${scoreCell(`gm(${m.id},'hs',this.value)`, m.hs)} : ${scoreCell(`gm(${m.id},'as',this.value)`, m.as)}<span class="t">${esc(tname(m.away))}</span><button class="sec mini" onclick="openMatch('g${m.id}')">Details</button></div>${goalLine('g'+m.id)}`).join('');
@@ -558,24 +778,47 @@ let currentMatch = null, prevTab = 'home';
 function getMatch(key){
   if (key[0] === 'g'){
     const m = S.matches.find(x => x.id === +key.slice(1)); if (!m) return null;
-    return {home: m.home, away: m.away, hs: m.hs, as: m.as, title: `Group ${m.group} · Match ${matchNo(key)}`,
+    return {home: m.home, away: m.away, hs: m.hs, as: m.as, toss: m.toss, title: `Group ${m.group} · Match ${matchNo(key)}`,
             set: (f, v) => { m[f] = v; }};
   }
   if (!S.ko) return null;
   const [r, i] = key.slice(1).split('-').map(Number);
   const rounds = koRounds(), m = rounds[r]?.[i]; if (!m) return null;
-  return {home: m.home, away: m.away, hs: m.hs, as: m.as, ph: m.ph, pa: m.pa, title: roundName(rounds[r].length * 2) + ' · Match ' + matchNo(key),
+  return {home: m.home, away: m.away, hs: m.hs, as: m.as, ph: m.ph, pa: m.pa, toss: m.toss, title: roundName(rounds[r].length * 2) + ' · Match ' + matchNo(key),
           set: (f, v) => { const k = `${r}-${i}`; S.ko.results[k] = S.ko.results[k] || {}; S.ko.results[k][f] = v; }};
 }
 const goalsOf = key => (S.goals[key] || []).slice().sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || (a.plus||0) - (b.plus||0));
 const cardsOf = key => (S.cards[key] || []).slice().sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || (a.plus||0) - (b.plus||0));
 const cardIcon = c => c.color === 'Red' ? '🟥' : '🟨';
+function tossOf(key){
+  if (key[0] === 'g'){ const m = S.matches.find(x => 'g' + x.id === key); return m ? m.toss ?? null : null; }
+  return S.ko && S.ko.results[key.slice(1)] ? S.ko.results[key.slice(1)].toss ?? null : null;
+}
+function setToss(v){
+  document.activeElement && document.activeElement.blur && document.activeElement.blur();
+  const m = getMatch(currentMatch); if (!m) return;
+  if (m.hs == null) m.set('hs', 0); if (m.as == null) m.set('as', 0);
+  m.set('toss', v === '' ? null : +v); save(); render(); renderMatch();
+}
+function sidesOf(key){
+  if (key[0] === 'g'){ const m = S.matches.find(x => 'g' + x.id === key); return m ? {home: m.home, away: m.away} : null; }
+  if (!S.ko) return null;
+  const [r, i] = key.slice(1).split('-').map(Number), m = koRounds()[r]?.[i];
+  return m ? {home: m.home, away: m.away} : null;
+}
 function goalLine(key){
-  const g = goalsOf(key), c = cardsOf(key); if (!g.length && !c.length) return '';
-  return `<div class="gl">${c.map(x => `<span>${cardIcon(x)} ${esc(x.player || 'TBC')} ${fmtMin(x)}</span>`).join('')}${g.map(x => `<span>⚽ ${esc(x.player || 'TBC')} ${fmtMin(x)}${x.type ? ' (' + x.type + ')' : ''} <i>${esc(tname(x.team))}</i></span>`).join('')}</div>`;
+  const g = goalsOf(key), c = cardsOf(key), tw = tossOf(key); if (!g.length && !c.length && tw == null) return '';
+  const sd = sidesOf(key) || {};
+  const ev = c.map(x => ({...x, k: 'c'})).concat(g.map(x => ({...x, k: 'g'})))
+    .sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || (a.plus || 0) - (b.plus || 0));
+  const item = x => x.k === 'c' ? `${cardIcon(x)} ${esc(x.player || 'TBC')} ${fmtMin(x)}`
+    : `⚽ ${esc(x.player || 'TBC')} ${fmtMin(x)}${x.type ? ' <i>(' + (x.type === 'Own goal' ? 'OG' : 'pen') + ')</i>' : ''}`;
+  const col = id => ev.filter(x => x.team === id).map(x => `<div>${item(x)}</div>`).join('');
+  return `<div class="gl2"><div class="glh">${col(sd.home)}</div><div class="glm"></div><div class="gla">${col(sd.away)}</div></div>` +
+    (tw != null ? `<div class="gl" style="text-align:center">🪙 <b>${esc(tname(tw))}</b> won by toss</div>` : '');
 }
 function openMatch(key){
-  const t = ['home','fixtures','groups','knockout'].find(x => !$('tab-' + x).classList.contains('hidden'));
+  const t = ['home','fixtures','groups','knockout','team','poster','evlist'].find(x => !$('tab-' + x).classList.contains('hidden'));
   if (t) prevTab = t;
   currentMatch = key; renderMatch(); showTab('match');
 }
@@ -585,34 +828,51 @@ function syncScore(){
   m.set('as', g.filter(x => x.team === m.away).length);
 }
 const matchLen = () => S.matchLen || 40;
-// clock: {phase:'RUN'|'PAUSE'|'FT', acc: ms counted before last start, t: last start time}
+const halfLen = () => Math.max(1, Math.round(matchLen() / 2));
+// clock: {phase:'RUN'|'PAUSE'|'HT'|'FT', half:1|2, acc: ms of current half before last start, t: last start}
 function elapsedMs(c){
-  if (!c || !c.phase) return 0;
+  if (!c || !c.phase || c.phase === 'HT') return 0;
   return (c.acc || 0) + (c.phase === 'RUN' ? Date.now() - c.t : 0);
 }
 function clockNow(c){
   if (!c || !c.phase) return null;
-  if (c.phase === 'FT' && c.end) return c.end;
-  const el = Math.floor(elapsedMs(c) / 60000) + 1, L = matchLen();
-  return el > L ? {min: L, plus: el - L} : {min: el, plus: 0};
+  if (c.phase === 'FT') return c.end || {min: matchLen(), plus: 0};
+  const H = halfLen();
+  if (c.phase === 'HT') return {min: H, plus: 0};
+  const base = (c.half || 1) === 2 ? H : 0, el = Math.floor(elapsedMs(c) / 60000) + 1;
+  return el > H ? {min: base + H, plus: el - H} : {min: base + el, plus: 0};
 }
 const fmtMin = e => e && e.min != null ? `${e.min}${e.plus ? '+' + e.plus : ''}'` : '';
 function clockLabel(c){
   if (!c || !c.phase) return 'Not started';
   if (c.phase === 'FT') return 'Full time';
+  if (c.phase === 'HT') return `Half time · Total ${halfLen()}'`;
   const ms = elapsedMs(c), mm = Math.floor(ms / 60000), ss = Math.floor(ms / 1000) % 60;
-  return `${c.phase === 'PAUSE' ? '⏸ Paused · ' : ''}${fmtMin(clockNow(c))} <span class="mut">(${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')})</span>`;
+  return `${c.phase === 'PAUSE' ? '⏸ Paused · ' : ''}${(c.half || 1) === 2 ? '2nd' : '1st'} half ${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')} · <b>Total ${fmtMin(clockNow(c))}</b>`;
 }
 function setClock(action){
   S.clocks = S.clocks || {};
-  const c = S.clocks[currentMatch] || {phase: null, acc: 0};
-  if (action === 'start'){ if (c.phase === 'FT') c.end = null; c.phase = 'RUN'; c.t = Date.now(); }
-  else if (action === 'pause'){ if (c.phase !== 'RUN') return; c.acc = elapsedMs(c); c.phase = 'PAUSE'; }
-  else if (action === 'stop'){ if (!confirm('Stop the match (full time)?')) return; c.end = clockNow(c); c.acc = elapsedMs(c); c.phase = 'FT'; }
-  else if (action === 'reset'){ if (!confirm('Reset the match clock to 0?')) return; delete S.clocks[currentMatch]; save(); return renderMatch(); }
-  S.clocks[currentMatch] = c; save(); renderMatch();
+  const c = S.clocks[currentMatch] || {phase: null, acc: 0, half: 1};
+  if (action === 'start'){
+    if (c.phase === 'HT'){ c.half = 2; c.acc = 0; }      // 2nd half timer starts fresh
+    if (c.phase === 'FT') c.end = null;
+    c.phase = 'RUN'; c.t = Date.now();
+  } else if (action === 'pause'){ if (c.phase !== 'RUN') return; c.acc = elapsedMs(c); c.phase = 'PAUSE'; }
+  else if (action === 'half'){
+    if ((c.half || 1) !== 1 || !['RUN', 'PAUSE'].includes(c.phase)) return;
+    if (!confirm('End the first half (half time)?')) return;
+    c.phase = 'HT'; c.acc = 0; c.half = 1;
+  } else if (action === 'stop'){
+    if (!confirm('End the match (full time)?')) return;
+    c.end = clockNow(c); c.acc = elapsedMs(c); c.phase = 'FT';
+    const mm = getMatch(currentMatch);                 // no goals = 0 : 0, so the match counts as played
+    if (mm){ if (mm.hs == null) mm.set('hs', 0); if (mm.as == null) mm.set('as', 0); }
+  } else if (action === 'reset'){ if (!confirm('Reset the match clock to 0?')) return; delete S.clocks[currentMatch]; save(); return renderMatch(); }
+  S.clocks[currentMatch] = c; save(); render(); renderMatch();
 }
-setInterval(() => { const el = $('clock'); if (el && currentMatch) el.innerHTML = clockLabel((S.clocks || {})[currentMatch]); }, 1000);
+// live clocks everywhere (match page, home, team pages)
+setInterval(() => { document.querySelectorAll('[data-clock]').forEach(el => {
+  const c = (S.clocks || {})[el.dataset.clock]; el.innerHTML = el.dataset.plain ? clockLabel(c).replace(/<[^>]+>/g, '') : clockLabel(c); }); }, 1000);
 
 const KINDS = {goals: 'gid', cards: 'cid', fouls: 'fid'};
 const storeOf = kind => kind === 'fouls' ? (S.fouls = S.fouls || {}) : S[kind];
@@ -678,13 +938,21 @@ function renderMatch(){
   const banned = suspensions().byMatch[currentMatch] || [];
   const susp = banned.length ? `<div class="card" style="border-color:var(--err)"><b>🚫 Suspended for this match:</b> ${banned.map(b => `${esc(b.player)} (${esc(tname(b.team))}, ${esc(b.reason)})`).join(', ')}</div>` : '';
   const pens = (m.ph != null && m.pa != null) ? `<p class="mut" style="text-align:center">Penalties: ${m.ph} – ${m.pa}</p>` : '';
+  const level = (m.hs ?? 0) === (m.as ?? 0);
+  const tossHtml = isAdmin
+    ? (level ? `<p style="text-align:center">🪙 Win by toss <select onchange="setToss(this.value)"><option value="">— no toss —</option>
+        <option value="${m.home}" ${m.toss === m.home ? 'selected' : ''}>${esc(tname(m.home))}</option>
+        <option value="${m.away}" ${m.toss === m.away ? 'selected' : ''}>${esc(tname(m.away))}</option></select></p>` : '')
+    : (m.toss != null && level ? `<p style="text-align:center"><b>🪙 ${esc(tname(m.toss))} won by toss</b></p>` : '');
+  const half = (c && c.half) || 1;
   const clockBtns = !isAdmin ? '' : `<p style="text-align:center">
-    ${ph !== 'RUN' ? `<button onclick="setClock('start')">▶ ${ph === 'PAUSE' ? 'Resume' : ph === 'FT' ? 'Restart' : 'Start'}</button>` : ''}
+    ${ph !== 'RUN' ? `<button onclick="setClock('start')">▶ ${ph === 'PAUSE' ? 'Resume' : ph === 'HT' ? 'Start 2nd half' : ph === 'FT' ? 'Restart' : 'Start'}</button>` : ''}
     ${ph === 'RUN' ? `<button class="sec" onclick="setClock('pause')">⏸ Pause</button>` : ''}
-    ${ph === 'RUN' || ph === 'PAUSE' ? `<button class="danger" onclick="setClock('stop')">⏹ Stop</button>` : ''}
+    ${(ph === 'RUN' || ph === 'PAUSE') && half === 1 ? `<button class="sec" onclick="setClock('half')">⏱ Half time</button>` : ''}
+    ${ph !== 'FT' ? `<button class="danger" onclick="setClock('stop')">⏹ Stop${!ph ? ' (mark full time)' : ''}</button>` : ''}
     ${ph ? `<button class="sec mini" onclick="setClock('reset')">Reset</button>` : ''}
-    <span class="mut" style="margin-left:10px">Match length <input type="number" min="1" max="150" value="${matchLen()}" style="width:60px"
-      onchange="S.matchLen = Math.max(1, +this.value || 40); this.blur(); save(); renderMatch();"> min</span></p>`;
+    <span class="mut" style="margin-left:10px">Match length <input type="number" min="2" max="150" value="${matchLen()}" style="width:60px"
+      onchange="S.matchLen = Math.max(2, +this.value || 40); this.blur(); save(); renderMatch();"> min (each half ${halfLen()} min)</span></p>`;
   const teamPad = id => `<div class="card" style="flex:1;min-width:260px"><h3>${esc(tname(id))}</h3>
     <button onclick="logEvent('goals',${id},{type:''})">⚽ Goal</button>
     <button onclick="logEvent('goals',${id},{type:'Penalty'})">⚽ Penalty goal</button>
@@ -703,8 +971,8 @@ function renderMatch(){
     : '<p class="mut">No events yet.</p>';
   $('matchView').innerHTML = `<button class="sec" onclick="showTab(prevTab)">← Back</button>
     <h2 style="text-align:center">${esc(m.title)}</h2>
-    <div class="mhead"><b>${esc(tname(m.home))}</b><span>${m.hs ?? '–'} : ${m.as ?? '–'}</span><b>${esc(tname(m.away))}</b></div>${pens}
-    <p style="text-align:center;font-size:1.1rem">⏱ <span id="clock">${clockLabel(c)}</span></p>
+    <div class="mhead"><b>${esc(tname(m.home))}</b><span>${m.hs ?? '–'} : ${m.as ?? '–'}</span><b>${esc(tname(m.away))}</b></div>${goalLine(currentMatch)}${pens}${tossHtml}
+    <p style="text-align:center;font-size:1.1rem">⏱ <span id="clock" data-clock="${currentMatch}">${clockLabel(c)}</span></p>
     ${clockBtns}${susp}${pads}<h3>Match events</h3>${list}${squadLists(m.home, m.away)}`;
 }
 /* ---------- suspensions ----------
@@ -722,39 +990,38 @@ function teamMatchKeys(team){
   return keys;
 }
 function suspensions(){
-  const byMatch = {}, current = [], players = {};
+  const byMatch = {}, bans = [], players = {};
   Object.values(S.cards || {}).flat().filter(c => c.player).forEach(c => {
     const k = c.player.toLowerCase() + '|' + c.team; players[k] = players[k] || {player: c.player, team: c.team};
   });
   Object.entries(players).forEach(([pk, pl]) => {
-    let pending = 0, yellows = 0, reason = '';
-    let nextBan = null;
+    let pending = 0, yellows = 0, reason = '', cause = null;
     for (const m of teamMatchKeys(pl.team)){
       if (pending > 0){
         (byMatch[m.key] = byMatch[m.key] || []).push({...pl, reason});
-        if (!m.played && !nextBan) nextBan = m.key;
+        bans.push({...pl, reason, key: m.key, served: m.played, cause});
         pending--; continue;
       }
-      const mine = (S.cards[m.key] || []).filter(c => c.team === pl.team && c.player.toLowerCase() + '|' + c.team === pk);
-      if (mine.some(c => c.color === 'Red')){ pending += RED_BAN; reason = 'Red card'; }
+      const mine = (S.cards[m.key] || []).filter(c => c.player && c.player.toLowerCase() + '|' + c.team === pk);
+      if (mine.some(c => c.color === 'Red')){ pending += RED_BAN; reason = 'Red card'; cause = m.key; }
       else {
         yellows += mine.filter(c => c.color === 'Yellow').length;
-        while (yellows >= YELLOWS_FOR_BAN){ pending++; yellows -= YELLOWS_FOR_BAN; reason = YELLOWS_FOR_BAN + ' yellow cards'; }
+        while (yellows >= YELLOWS_FOR_BAN){ pending++; yellows -= YELLOWS_FOR_BAN; reason = YELLOWS_FOR_BAN + ' yellow cards'; cause = m.key; }
       }
     }
-    if (nextBan){
-      const g = getMatch(nextBan);
-      current.push({...pl, reason: byMatch[nextBan].find(x => x.player === pl.player)?.reason || reason,
-        match: g ? `${g.title}: ${tname(g.home)} vs ${tname(g.away)}` : 'Next match'});
-    } else if (pending > 0) current.push({...pl, reason, match: 'Next match (not scheduled yet)'});
+    for (; pending > 0; pending--) bans.push({...pl, reason, key: null, served: false, cause});
   });
-  return {byMatch, current};
+  bans.sort((a, b) => a.served - b.served);
+  return {byMatch, bans, current: bans.filter(b => !b.served)};
 }
 function renderSuspensions(){
-  const {current} = suspensions();
-  $('suspView').innerHTML = '<h2>Suspended players</h2>' + (current.length
-    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>Reason</th><th>Misses</th></tr>${current.map((r, i) => `<tr><td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td>${esc(r.reason)}</td><td>${esc(r.match)}</td></tr>`).join('')}</table>
-       <p class="mut">Rules: a red card means a ban for the next match. Every ${YELLOWS_FOR_BAN} yellow cards across matches also mean a ban for the next match.</p>`
+  const {bans} = suspensions(); EVR.susp = bans;
+  const mname = k => { if (!k) return 'Next match (not scheduled yet)'; const g = getMatch(k); return g ? `${g.title}: ${tname(g.home)} vs ${tname(g.away)}` : 'Next match'; };
+  $('suspView').innerHTML = '<h2>Suspended players</h2>' + (bans.length
+    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>Reason</th><th>Match affected</th><th>Status</th></tr>${bans.map((r, i) => `<tr class="clk${r.served ? ' cleared' : ''}" onclick="openEvList('susp',${i})">
+        <td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td>${esc(r.reason)}</td><td>${esc(mname(r.key))}</td>
+        <td>${r.served ? '<span class="badge ok">✅ Cleared</span>' : '<span class="badge bad">🚫 Suspended</span>'}</td></tr>`).join('')}</table>
+       <p class="mut">A red card means a ban for the next match. Every ${YELLOWS_FOR_BAN} yellow cards across matches also mean a ban for the next match. A ban shows as cleared once that match has been played. Tap a row to see the matches involved.</p>`
     : '<p class="mut">No players suspended.</p>');
 }
 /* ---------- squads (stored by team name, so they survive fixture regeneration) ---------- */
@@ -772,6 +1039,9 @@ function pickedPlayer(id){
   return el.value.trim();
 }
 const canEditSquad = name => isAdmin || (role === 'manager' && sqKey(myTeam) === sqKey(name));
+const sqOpen = new Set();
+function toggleSq(id){ sqOpen.has(id) ? sqOpen.delete(id) : sqOpen.add(id); document.activeElement && document.activeElement.blur && document.activeElement.blur(); renderSquads(); }
+function sqAll(open){ S.teams.forEach(t => open ? sqOpen.add(t.id) : sqOpen.delete(t.id)); renderSquads(); }
 function renderSquads(){
   if (!S.teams.length){ $('squadsView').innerHTML = '<div class="card mut">No teams yet.</div>'; return; }
   if (document.activeElement && document.activeElement.closest && document.activeElement.closest('.sqcard')) return; // don't overwrite while typing
@@ -779,10 +1049,10 @@ function renderSquads(){
   const teams = role === 'manager' ? [...S.teams].sort((a, b) => canEditSquad(b.name) - canEditSquad(a.name)) : S.teams;
   $('squadsView').innerHTML = (anyEdit ? `<div class="card"><p class="mut">Enter the jersey number and player name. Use + Add player for more rows, then click Save squad.
       ${role === 'manager' ? `<br>You are logged in as manager of <b>${esc(myTeam)}</b> and can edit only that squad.` : ''}</p></div>` : '') +
-    `<div class="sqgrid">${teams.map(t => {
+    `<p><button class="sec mini" onclick="sqAll(true)">Expand all</button> <button class="sec mini" onclick="sqAll(false)">Collapse all</button></p><div class="sqlist">${teams.map(t => {
       const sq = S.squads[t.name] || [], ed = canEditSquad(t.name);
-      return `<div class="card sqcard"><h3>${esc(t.name)} <span class="badge">Group ${t.group}</span> <span class="badge">${sq.length} players</span></h3>` +
-        (ed ? `<table class="sqTable" data-team="${esc(t.name)}"><tr><th style="width:70px">No.</th><th>Player name</th><th></th></tr>
+      return `<div class="card sqcard"><h3 class="sqHead" onclick="toggleSq(${t.id})">${sqOpen.has(t.id) ? '▾' : '▸'} ${esc(t.name)} <span class="badge">Group ${t.group}</span> <span class="badge">${sq.length} players</span></h3>` +
+        (!sqOpen.has(t.id) ? '' : ed ? `<table class="sqTable" data-team="${esc(t.name)}"><tr><th style="width:70px">No.</th><th>Player name</th><th></th></tr>
                  ${(sq.length ? sq : ['', '', '']).map(n => sqRow(n)).join('')}</table>
                <p><button class="sec mini" onclick="addSqRow(this)">+ Add player</button> <button onclick="saveSquad(this)">Save squad</button></p>`
             : (sq.length ? `<table><tr><th style="width:70px">No.</th><th>Player name</th></tr>${sq.map(n => { const [no, nm] = splitPlayer(n);
@@ -839,9 +1109,24 @@ function renderCards(){
     c.color === 'Red' ? t[k].r++ : t[k].y++;
   });
   const rows = Object.values(t).sort((a, b) => b.r - a.r || b.y - a.y || a.player.localeCompare(b.player));
+  EVR.card = rows;
   $('cardsView').innerHTML = '<h2>Disciplinary (cards)</h2>' + (rows.length
-    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>🟨</th><th>🟥</th></tr>${rows.map((r, i) => `<tr><td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td>${r.y}</td><td>${r.r}</td></tr>`).join('')}</table>`
+    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>🟨</th><th>🟥</th></tr>${rows.map((r, i) => `<tr class="clk" onclick="openEvList('card',${i})"><td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td>${r.y}</td><td>${r.r}</td></tr>`).join('')}</table>`
     : '<p class="mut">No cards recorded yet.</p>');
+}
+function renderConceded(){
+  const stat = {};
+  S.teams.forEach(t => stat[t.id] = {id: t.id, group: t.group, P: 0, GA: 0});
+  allMatches().filter(m => m.ready && m.home != null && m.away != null && m.hs != null && m.as != null).forEach(m => {
+    if (stat[m.home]){ stat[m.home].P++; stat[m.home].GA += m.as; }
+    if (stat[m.away]){ stat[m.away].P++; stat[m.away].GA += m.hs; }
+  });
+  const rows = Object.values(stat)
+    .sort((a, b) => a.GA - b.GA || b.P - a.P || tname(a.id).localeCompare(tname(b.id)));
+  $('concView').innerHTML = '<h2>🧤 Goals conceded (fewest first)</h2><p class="mut">All matches played, group and knockout. Penalty shoot-outs are not counted.</p>' + (rows.length
+    ? `<table><tr><th>#</th><th>Team</th><th>Group</th><th>P</th><th>Conceded</th><th>Per match</th></tr>${rows.map((r, i) =>
+        `<tr><td>${i+1}</td><td>${teamLink(r.id)}</td><td>${r.group}</td><td>${r.P}</td><td><b>${r.GA}</b></td><td>${r.P ? (r.GA / r.P).toFixed(1) : '–'}</td></tr>`).join('')}</table>`
+    : '<p class="mut">No teams yet.</p>');
 }
 function renderScorers(){
   const tally = {};
@@ -850,8 +1135,9 @@ function renderScorers(){
     tally[k] = tally[k] || {player: g.player, team: g.team, n: 0}; tally[k].n++;
   });
   const rows = Object.values(tally).sort((a, b) => b.n - a.n || a.player.localeCompare(b.player));
+  EVR.goal = rows;
   $('scorersView').innerHTML = `<h2>Top scorers</h2>` + (rows.length
-    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>Goals</th></tr>${rows.map((r, i) => `<tr><td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td><b>${r.n}</b></td></tr>`).join('')}</table>`
+    ? `<table><tr><th>#</th><th>Player</th><th>Team</th><th>Goals</th></tr>${rows.map((r, i) => `<tr class="clk" onclick="openEvList('goal',${i})"><td>${i+1}</td><td>${esc(r.player)}</td><td>${esc(tname(r.team))}</td><td><b>${r.n}</b></td></tr>`).join('')}</table>`
     : '<p class="mut">No goals recorded yet.</p>');
 }
 
@@ -861,11 +1147,19 @@ function allMatches(){
   const byG = S.groups.map(g => S.matches.filter(m => m.group === g));
   const grp = [], max = Math.max(0, ...byG.map(x => x.length));
   for (let i = 0; i < max; i++) byG.forEach(list => list[i] && grp.push(list[i]));
-  const out = grp.map(m => ({key: 'g' + m.id, stage: 'Group ' + m.group, home: m.home, away: m.away, hs: m.hs, as: m.as}));
+  const out = grp.map(m => ({key: 'g' + m.id, stage: 'Group ' + m.group, home: m.home, away: m.away, hs: m.hs, as: m.as, toss: m.toss}));
   if (S.ko) koRounds().forEach(rnd => rnd.forEach(m => {
     if (m.home === null || m.away === null) return; // byes are not played
-    out.push({key: `k${m.r}-${m.i}`, stage: roundName(rnd.length * 2), home: m.home, away: m.away, hs: m.hs, as: m.as, ph: m.ph, pa: m.pa, ko: true});
+    out.push({key: `k${m.r}-${m.i}`, stage: roundName(rnd.length * 2), home: m.home, away: m.away, hs: m.hs, as: m.as, ph: m.ph, pa: m.pa, toss: m.toss, ko: true});
   }));
+  // organizer's custom order (separately for group and knockout stages)
+  const ord = S.order || [];
+  if (ord.length){
+    const pos = k => { const i = ord.indexOf(k); return i < 0 ? 1e6 : i; };
+    const srt = l => l.map((m, i) => [m, i]).sort((a, b) => pos(a[0].key) - pos(b[0].key) || a[1] - b[1]).map(x => x[0]);
+    const s = srt(out.filter(m => !m.ko)).concat(srt(out.filter(m => m.ko)));
+    out.splice(0, out.length, ...s);
+  }
   // assign day + kickoff
   const sc = S.sched || {days: 1, date: new Date().toISOString().slice(0, 10), time: '09:00', slot: 30};
   const days = Math.max(1, sc.days), gCount = grp.length, perDay = Math.ceil(gCount / days) || 1;
@@ -877,7 +1171,7 @@ function allMatches(){
     const d = new Date(sc.date + 'T00:00:00'); d.setDate(d.getDate() + m.day - 1);
     d.setHours(hh, mm + slotIdx[m.day] * sc.slot, 0, 0);
     m.when = d; m.played = m.hs != null && m.as != null && (((S.clocks || {})[m.key] || {}).phase === 'FT' || !((S.clocks || {})[m.key] || {}).phase);
-    m.live = ['RUN', 'PAUSE'].includes(((S.clocks || {})[m.key] || {}).phase);
+    m.live = ['RUN', 'PAUSE', 'HT'].includes(((S.clocks || {})[m.key] || {}).phase);
     m.ready = m.home !== undefined && m.away !== undefined;
   });
   out.forEach(m => { const o = (S.schedOv || {})[m.key]; if (o && o.when) m.when = new Date(o.when); m.venue = (o && o.venue) || ''; });
@@ -888,7 +1182,7 @@ function allMatches(){
 const fmtWhen = d => d.toLocaleDateString(undefined, {weekday: 'short', day: 'numeric', month: 'short'}) + ' · ' + d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 const dayLabel = m => (S.sched?.days || 1) > 1 ? `Day ${m.day} · ` : '';
 function matchCard(m, big){
-  const live = m.live ? `<span class="badge admin">LIVE · ${clockLabel(S.clocks[m.key]).replace(/<[^>]+>/g, '')}</span>` : '';
+  const live = m.live ? `<span class="badge admin">🔴 LIVE · <span data-clock="${m.key}" data-plain="1">${clockLabel(S.clocks[m.key]).replace(/<[^>]+>/g, '')}</span></span>` : '';
   const score = m.hs != null && m.as != null ? `${m.hs} : ${m.as}` : 'vs';
   const pen = m.ph != null && m.pa != null && m.hs === m.as ? `<div class="mut">Penalties ${m.ph} – ${m.pa}</div>` : '';
   return `<div class="ko" style="${big ? 'font-size:1.15rem;padding:14px' : ''};cursor:pointer" onclick="openMatch('${m.key}')">
@@ -906,7 +1200,7 @@ function renderHome(){
   const tables = S.groups.map(g => {
     const st = standings(g);
     return `<div class="card"><h3>Group ${g}</h3><table><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
-      ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${esc(tname(r.id))}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table></div>`;
+      ${st.map((r, i) => `<tr class="${i < S.qualifiers ? 'q' : ''}"><td>${i+1}</td><td>${teamLink(r.id)}</td><td>${r.P}</td><td>${r.W}</td><td>${r.D}</td><td>${r.L}</td><td><b>${r.Pts}</b></td></tr>`).join('')}</table></div>`;
   }).join('');
   const played = done.length, total = ms.length;
   $('homeView').innerHTML = `
@@ -937,21 +1231,84 @@ function setSched(key, f, v){
   document.activeElement && document.activeElement.blur && document.activeElement.blur(); save(); render();
 }
 function resetSched(){ if (!confirm('Reset all match times and venues to the automatic schedule?')) return; S.schedOv = {}; save(); render(); }
+let orderMode = false;
+window.__drag = false;
+// press-and-drag reordering (mouse + touch)
+function makeSortable(box, sel, done){
+  box.querySelectorAll(sel).forEach(it => it.addEventListener('pointerdown', e => {
+    if (e.button > 0 || e.target.closest('button,input,select,a')) return;
+    e.preventDefault();
+    const drag = it, start = [...box.querySelectorAll(sel)].map(x => x.dataset.key);
+    window.__drag = true; drag.classList.add('dragging'); document.body.classList.add('nosel');
+    const move = ev => {
+      ev.preventDefault();
+      const items = [...box.querySelectorAll(sel)].filter(x => x !== drag);
+      const after = items.find(x => { const r = x.getBoundingClientRect(); return ev.clientY < r.top + r.height / 2; });
+      if (after){ if (drag.nextElementSibling !== after) after.parentNode.insertBefore(drag, after); }
+      else if (items.length && items[items.length - 1].nextElementSibling !== drag) items[items.length - 1].after(drag);
+      if (ev.clientY < 70) scrollBy(0, -14); else if (ev.clientY > innerHeight - 70) scrollBy(0, 14);
+    };
+    const up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      document.removeEventListener('pointercancel', up);
+      drag.classList.remove('dragging'); document.body.classList.remove('nosel'); window.__drag = false;
+      const keys = [...box.querySelectorAll(sel)].map(x => x.dataset.key);
+      if (keys.join() !== start.join()) done(keys);
+    };
+    document.addEventListener('pointermove', move, {passive: false});
+    document.addEventListener('pointerup', up);
+    document.addEventListener('pointercancel', up);
+  }));
+}
+function applyOrder(keys, ko){
+  const list = allMatches(), prev = list.filter(x => !!x.ko === ko).map(x => x.key), other = list.filter(x => !!x.ko !== ko).map(x => x.key);
+  S.order = ko ? other.concat(keys) : keys.concat(other);
+  S.schedOv = S.schedOv || {};
+  keys.forEach((k, i) => { if (prev[i] !== k && S.schedOv[k]) delete S.schedOv[k].when; });   // moved matches take the new slot time
+  save(); render();
+}
+function moveMatch(key, d){
+  const list = allMatches(), m = list.find(x => x.key === key); if (!m) return;
+  const sec = list.filter(x => !!x.ko === !!m.ko), i = sec.indexOf(m), j = i + d;
+  if (j < 0 || j >= sec.length) return;
+  [sec[i], sec[j]] = [sec[j], sec[i]];
+  const other = list.filter(x => !!x.ko !== !!m.ko);
+  S.order = (m.ko ? other.concat(sec) : sec.concat(other)).map(x => x.key);
+  S.schedOv = S.schedOv || {};
+  [sec[i].key, sec[j].key].forEach(k => { if (S.schedOv[k]) delete S.schedOv[k].when; });   // let times re-flow
+  save(); render();
+}
+function resetOrder(){ if (!confirm('Go back to the automatic match order?')) return; S.order = []; save(); render(); }
 function renderFixtures(){
   const el = $('fixturesView');
-  if (document.activeElement && el.contains(document.activeElement)) return;
-  $('fxNote').innerHTML = isAdmin ? 'Full match schedule in order of play. As organizer you can change any kick-off date/time and venue; the list re-orders and match numbers update automatically. <button class="sec mini" onclick="resetSched()">Reset to automatic schedule</button>' : 'Full match schedule in order of play. Tap a match for details.';
+  if (document.activeElement && el.contains(document.activeElement) && document.activeElement.tagName === 'INPUT') return;
+  $('fxNote').innerHTML = isAdmin ? `Full match schedule in order of play. As organizer you can change kick-off date/time and venue.
+     <p style="margin:8px 0 0"><button class="${orderMode ? '' : 'sec'}" onclick="orderMode=!orderMode; renderFixtures()">${orderMode ? '✅ Done reordering' : '🔀 Override match order'}</button>
+     ${(S.order || []).length ? '<button class="sec mini" onclick="resetOrder()">Reset order</button>' : ''} <button class="sec mini" onclick="resetSched()">Reset times & venues</button></p>
+     ${orderMode ? '<p class="mut">Press and drag a match to its new place. Group and knockout matches are reordered separately; knockout always follows the group stage.</p>' : ''}` : 'Full match schedule in order of play. Tap a match for details.';
   if (!S.groups.length){ el.innerHTML = '<div class="card mut">No fixtures yet.</div>'; return; }
+  if (window.__drag) return;
+  if (isAdmin && orderMode){
+    const all = allMatches();
+    const sec = (arr, title, id) => !arr.length ? '' : `<div class="card"><h3 style="margin-top:0">${title}</h3><div id="${id}">${arr.map(m => `<div class="fx sortit" data-key="${m.key}">
+        <div class="fxmeta"><span class="dgrip">⠿</span><span class="badge mno">#${m.no}</span> <span class="badge">${esc(m.stage)}</span> ${fmtWhen(m.when)}</div>
+        <div class="match"><span class="t r">${esc(m.ready ? tname(m.home) : 'TBD')}</span><b class="fxscore">${m.hs ?? '–'} : ${m.as ?? '–'}</b><span class="t">${esc(m.ready ? tname(m.away) : 'TBD')}</span></div></div>`).join('')}</div></div>`;
+    el.innerHTML = sec(all.filter(m => !m.ko), 'Group stage', 'sbG') + sec(all.filter(m => m.ko), 'Knockout stage', 'sbK');
+    [['sbG', false], ['sbK', true]].forEach(([id, ko]) => { const b = $(id); if (b) makeSortable(b, '.sortit', keys => applyOrder(keys, ko)); });
+    return;
+  }
   let last = null, html = '';
   allMatches().forEach(m => {
     const dk = m.when.toDateString();
     if (dk !== last){ if (last) html += '</div>'; html += `<div class="card"><h3 class="dayh">${m.when.toLocaleDateString(undefined, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}</h3>`; last = dk; }
-    const sched = isAdmin
+    const mv = '';
+    const sched = isAdmin && !orderMode
       ? `<input type="datetime-local" value="${toLocalInput(m.when)}" onchange="setSched('${m.key}','when',this.value)"> <input placeholder="Venue / pitch" value="${esc(m.venue)}" onchange="setSched('${m.key}','venue',this.value)" style="width:150px">`
       : `<b>🕒 ${m.when.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</b>${m.venue ? ' · 📍 ' + esc(m.venue) : ''}`;
     const pen = m.ph != null && m.pa != null && m.hs === m.as ? ` <span class="mut">(pens ${m.ph}–${m.pa})</span>` : '';
     const score = `<b class="fxscore">${m.hs ?? '–'} : ${m.as ?? '–'}</b>${pen}`;
-    html += `<div class="fx"><div class="fxmeta"><span class="badge mno">#${m.no}</span> <span class="badge">${esc(m.stage)}</span> ${m.live ? '<span class="badge admin">LIVE</span>' : ''} ${sched}</div>
+    html += `<div class="fx"><div class="fxmeta"><span class="badge mno">#${m.no}</span> <span class="badge">${esc(m.stage)}</span> ${m.live ? '<span class="badge admin">LIVE</span>' : ''} ${mv} ${sched}</div>
       <div class="match"><span class="t r">${esc(m.ready ? tname(m.home) : 'TBD')}</span>${score}<span class="t">${esc(m.ready ? tname(m.away) : 'TBD')}</span>
       <button class="sec mini" onclick="openMatch('${m.key}')">Details</button></div>${goalLine(m.key)}</div>`;
   });
@@ -1052,11 +1409,126 @@ function koSkeleton(){
     }
     cur = next; teams /= 2; lab = cur.map((_, i) => i + 1);
   }
-  return `<div style="width:100%"><p class="mut">📋 Knockout path. Teams fill in automatically when the organizer generates the bracket after the group stage.</p><div class="bracket">${html}</div></div>`;
+  return `<div style="width:100%"><p class="mut">📋 Knockout path. Teams fill in automatically as soon as all group matches are finished.</p><div class="bracket">${html}</div></div>`;
+}
+
+/* ---------- filtered match list (from scorers / cards / suspensions) ---------- */
+const EVR = {goal: [], card: [], susp: []};
+let EVSEL = null;
+function openEvList(kind, i){ const r = EVR[kind][i]; if (!r) return; EVSEL = {kind, r}; renderEvList(); showTab('evlist'); }
+function renderEvList(){
+  const el = $('evView'); if (!EVSEL){ el.innerHTML = ''; return; }
+  const {kind, r} = EVSEL;
+  const same = x => x.player && x.player.toLowerCase() === r.player.toLowerCase() && x.team === r.team;
+  const gKeys = Object.keys(S.goals || {}).filter(k => S.goals[k].some(x => same(x) && x.type !== 'Own goal'));
+  const cKeys = Object.keys(S.cards || {}).filter(k => S.cards[k].some(same));
+  const keys = new Set(kind === 'goal' ? gKeys : cKeys);
+  if (kind === 'susp' && r.key) keys.add(r.key);
+  const ms = allMatches().filter(m => keys.has(m.key));
+  const tag = m => {
+    const out = [];
+    const g = (S.goals[m.key] || []).filter(x => same(x) && x.type !== 'Own goal').length;
+    const cs = (S.cards[m.key] || []).filter(same);
+    if (kind === 'goal' && g) out.push(`⚽ ${g} goal${g > 1 ? 's' : ''}`);
+    if (kind !== 'goal') cs.forEach(c => out.push(`${cardIcon(c)} ${c.color} ${fmtMin(c)}`));
+    if (kind === 'susp' && m.key === r.cause) out.push('⚠️ Caused the ban');
+    if (kind === 'susp' && m.key === r.key) out.push(r.served ? '✅ Ban served in this match' : '🚫 Will miss this match');
+    return out.length ? `<div class="evtag">${out.join(' · ')}</div>` : '';
+  };
+  const head = kind === 'goal' ? `⚽ ${esc(r.player)} — ${r.n} goal${r.n > 1 ? 's' : ''}`
+    : kind === 'card' ? `🟨 ${esc(r.player)} — ${r.y} yellow, ${r.r} red`
+    : `🚫 ${esc(r.player)} — ${esc(r.reason)} ${r.served ? '<span class="badge ok">✅ Cleared</span>' : '<span class="badge bad">Suspended</span>'}`;
+  el.innerHTML = `<p><button class="sec" onclick="showTab('groups')">← Back</button></p>
+    <div class="card"><h2 style="margin-bottom:4px">${head}</h2><span class="badge">${esc(tname(r.team))}</span> <span class="badge">${ms.length} match${ms.length === 1 ? '' : 'es'}</span></div>
+    <div class="card">${ms.length ? ms.map(m => tag(m) + matchCard(m)).join('') : '<p class="mut">No matches found.</p>'}</div>
+    ${kind === 'susp' && !r.key ? '<p class="mut">The match this player will miss is not scheduled yet.</p>' : ''}`;
+}
+
+/* ---------- team page ---------- */
+let currentTeam = null, teamPrev = 'home';
+const teamLink = id => `<a href="#" class="tlink" onclick="event.preventDefault(); openTeam(${id})">${esc(tname(id))}</a>`;
+function openTeam(id){
+  const t = ['home','fixtures','groups','knockout','poster','evlist'].find(x => !$('tab-' + x).classList.contains('hidden'));
+  if (t) teamPrev = t;
+  currentTeam = id; renderTeam(); showTab('team');
+}
+function renderTeam(){
+  const el = $('teamView'), t = team(currentTeam);
+  if (!t){ el.innerHTML = '<div class="card mut">Team not found.</div>'; return; }
+  const r = standings(t.group).find(x => x.id === t.id) || {P:0, W:0, D:0, L:0, Pts:0};
+  const pos = finalOrder(t.group).findIndex(x => x.id === t.id) + 1;
+  const ms = allMatches().filter(m => m.ready && (m.home === t.id || m.away === t.id));
+  const live = ms.filter(m => m.live), played = ms.filter(m => !m.live && m.hs != null && m.as != null), up = ms.filter(m => !m.live && (m.hs == null || m.as == null));
+  el.innerHTML = `<p><button class="sec" onclick="showTab(teamPrev)">← Back</button></p>
+    <div class="card"><h2 style="margin-bottom:6px">${esc(t.name)}</h2>
+      <span class="badge">Group ${t.group}</span> <span class="badge mno">Position ${pos}</span>
+      <span class="badge">P ${r.P} · W ${r.W} · D ${r.D} · L ${r.L}</span> <span class="badge admin">${r.Pts} pts</span></div>
+    ${live.length ? `<div class="card" style="border-color:var(--warn)"><h2>🔴 Live now</h2>${live.map(m => matchCard(m, true)).join('')}</div>` : ''}
+    <div class="grid">
+      <div class="card"><h2>✅ Played</h2>${played.length ? played.slice().reverse().map(m => matchCard(m)).join('') : '<p class="mut">No matches played yet.</p>'}</div>
+      <div class="card"><h2>📅 Upcoming</h2>${up.length ? up.map(m => matchCard(m)).join('') : '<p class="mut">No upcoming matches.</p>'}</div>
+    </div><p class="mut">Tap a match to see its details.</p>`;
+}
+
+/* ---------- full fixture poster (World Cup style) ---------- */
+function renderPoster(){
+  const el = $('posterView'); if (!el) return;
+  if (!S.groups.length){ el.innerHTML = '<div class="card mut">No fixtures yet.</div>'; return; }
+  const ms = allMatches(), gms = ms.filter(m => !m.ko), kms = ms.filter(m => m.ko);
+  const dfmt = d => d.toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'});
+  const range = ms.length ? (ms[0].when.toDateString() === ms.at(-1).when.toDateString() ? dfmt(ms[0].when) : dfmt(ms[0].when) + ' – ' + dfmt(ms.at(-1).when)) : '';
+  const rows = list => { let last = null, out = '';
+    list.forEach(m => {
+      const dk = m.when.toDateString();
+      if (dk !== last){ out += `<tr class="pday"><td colspan="7">${m.when.toLocaleDateString(undefined, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}</td></tr>`; last = dk; }
+      out += `<tr><td><span class="pno">${m.no}</span></td><td>${m.when.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</td>
+        <td><span class="badge">${esc(m.stage)}</span></td>
+        <td style="text-align:right"><b>${esc(m.ready ? tname(m.home) : 'TBD')}</b></td>
+        <td class="pvs">${m.hs != null && m.as != null ? m.hs + ' – ' + m.as : 'vs'}</td>
+        <td style="text-align:left"><b>${esc(m.ready ? tname(m.away) : 'TBD')}</b></td><td class="mut">${esc(m.venue || '')}</td></tr>`;
+    });
+    return `<table class="ptable"><tr><th>#</th><th>Time</th><th>Stage</th><th style="text-align:right">Team</th><th></th><th style="text-align:left">Team</th><th>Venue</th></tr>${out}</table>`; };
+  el.innerHTML = `<div class="poster" id="poster">
+    <div class="phd"><div style="font-size:2.4rem">⚽</div><h1>${esc(S.name)}</h1>
+      <div>${range}</div><div class="mut" style="color:#dfe5fa">${S.teams.length} teams · ${S.groups.length} groups · ${ms.length || ''} matches</div></div>
+    <div class="psec"><h2>Groups</h2><div class="pgroups">${S.groups.map(g => `<div class="pgroup"><div class="pgh">GROUP ${g}</div>
+      ${S.teams.filter(t => t.group === g).map(t => `<div class="pteam">${esc(t.name)}</div>`).join('')}</div>`).join('')}</div></div>
+    <div class="psec"><h2>Group stage</h2>${rows(gms)}</div>
+    <div class="psec"><h2>Knockout stage</h2>${kms.length ? rows(kms) : koSkeleton()}</div>
+    <div class="pfoot">Fixture as of ${new Date().toLocaleString()}</div></div>`;
+}
+function loadH2C(){
+  return window.html2canvas ? Promise.resolve() : new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    s.onload = res; s.onerror = () => rej(new Error('Could not load the image tool. Check your internet connection.')); document.head.appendChild(s); });
+}
+async function posterBlob(){
+  await loadH2C(); const c = await html2canvas($('poster'), {scale: 2, backgroundColor: '#ffffff'});
+  return new Promise(r => c.toBlob(r, 'image/png'));
+}
+const posterFile = () => (S.name || 'tournament').replace(/[^\w\- ]+/g, '').trim() + ' - fixture.png';
+async function downloadPoster(){
+  try { const b = await posterBlob(); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = posterFile(); a.click(); }
+  catch(e){ alert(e.message); }
+}
+function printPoster(){ showTab('poster'); setTimeout(() => window.print(), 150); }
+async function sharePoster(){
+  const url = location.href.split('#')[0] + '#poster';
+  try {
+    if (navigator.canShare){
+      const b = await posterBlob(), f = new File([b], posterFile(), {type: 'image/png'});
+      if (navigator.canShare({files: [f]})) return await navigator.share({files: [f], title: S.name, text: S.name + ' – full fixture: ' + url});
+    }
+    if (navigator.share) return await navigator.share({title: S.name, text: S.name + ' – full fixture', url});
+    await navigator.clipboard.writeText(url); alert('Link copied:\n' + url);
+  } catch(e){
+    if (e.name === 'AbortError') return;
+    try { await navigator.clipboard.writeText(url); alert('Link copied:\n' + url); } catch(_){ prompt('Copy this link:', url); }
+  }
 }
 
 /* ---------- tabs & data ---------- */
-function showTab(t){ ['home','login','fixtures','setup','groups','knockout','match','squads'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
+function showTab(t){ ['home','login','fixtures','setup','groups','knockout','match','squads','team','history','poster','evlist'].forEach(x => $('tab-' + x).classList.toggle('hidden', x !== t));
   document.querySelectorAll('#sideNav [data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === t)); window.scrollTo(0, 0); }
 document.querySelectorAll('#sideNav [data-tab]').forEach(b => b.onclick = () => { showTab(b.dataset.tab); toggleMenu(false); });
 $('exportBtn').onclick = () => { const a = document.createElement('a');
@@ -1066,6 +1538,7 @@ $('resetBtn').onclick = () => { if (confirm('Delete everything?')){ S = blank();
 
 window.addEventListener('unhandledrejection', e => e.preventDefault());
 showTab('home'); load().catch(() => {});
+{ const h0 = location.hash.slice(1); if (['home','fixtures','groups','knockout','squads','poster','history'].includes(h0)) showTab(h0); }
 </script>
 </body>
 </html>
